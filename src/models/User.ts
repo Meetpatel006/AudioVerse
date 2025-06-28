@@ -63,6 +63,15 @@ userSchema.methods.comparePassword = async function (candidatePassword: string) 
 };
 
 // Check if the model has already been compiled
-const User: IUserModel = models.User || model<IUser, IUserModel>('User', userSchema);
+let User: IUserModel;
+
+try {
+  // Try to get the existing model if it exists
+  User = model<IUser, IUserModel>('User');
+} catch (e) {
+  // If the model doesn't exist, create it
+  User = model<IUser, IUserModel>('User', userSchema);
+}
 
 export { User };
+export default User;

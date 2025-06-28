@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '../../../../lib/mongodb';
+import connectToDatabase from '../../../../lib/mongodb';
 import { User } from '../../../../models/User';
 import { generateToken } from '../../../../lib/jwt';
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
@@ -19,7 +21,17 @@ export async function POST(request: Request) {
     await connectToDatabase();
 
     // Check if user exists and select password
-    const user = await User.findOne({ email }).select('+password').exec();
+    const user = await User.findOne({ email }).select('+password').lean().exec();
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+    
+    // Convert to plain object
+    const userObj = user && typeof user === 'object' ? { ...user } : user;
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -33,7 +45,14 @@ export async function POST(request: Request) {
     }
 
     // Check if password is correct
-    const isPasswordValid = await user.comparePassword(password);
+    if (!userObj.password) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+    
+    const isPasswordValid = await bcrypt.compare(password, userObj.password);
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -42,11 +61,10 @@ export async function POST(request: Request) {
     }
 
     // Create JWT token
-    const token = await generateToken(user._id.toString());
+    const token = await generateToken(userObj._id.toString());
 
     // Don't send password back
-    const userObject = user.toObject();
-    const { password: _, ...userWithoutPassword } = userObject;
+    const { password: _, ...userWithoutPassword } = userObj;
     
     // Set HTTP-only cookie
     const response = NextResponse.json(

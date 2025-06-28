@@ -1,81 +1,80 @@
-import { MongoClient, type MongoClientOptions, type Db, type MongoClient as MongoClientType } from 'mongodb';
+import mongoose, { ConnectOptions, Mongoose } from 'mongoose';
+
+type CachedConnection = {
+  conn: Mongoose | null;
+  promise: Promise<Mongoose> | null;
+};
 
 declare global {
   // eslint-disable-next-line no-var
-  var _mongoClientPromise: Promise<MongoClientType> | undefined;
+  var mongoose: CachedConnection;
 }
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://meetpatel:meetpatel@elevenlabs-data.rb5uivt.mongodb.net/elevenlabs?retryWrites=true&w=majority';
-const MONGODB_DB = process.env.MONGODB_DB || 'elevenlabs';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
 }
 
-if (!MONGODB_DB) {
-  throw new Error('Please define the MONGODB_DB environment variable');
+// Initialize the cached connection
+let cached: CachedConnection = global.mongoose || { conn: null, promise: null };
+
+if (!global.mongoose) {
+  global.mongoose = cached;
 }
 
-/**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
- */
-let client: MongoClientType;
-let clientPromise: Promise<MongoClientType>;
-
-const options: MongoClientOptions = {
-  // Add any additional options here
-  connectTimeoutMS: 10000, // 10 seconds
-  socketTimeoutMS: 30000, // 30 seconds
-  serverSelectionTimeoutMS: 10000, // 10 seconds
-  maxPoolSize: 10,
+const mongooseOptions: ConnectOptions = {
+  serverSelectionTimeoutMS: 30000, // 30 seconds
+  socketTimeoutMS: 45000, // 45 seconds
+  connectTimeoutMS: 30000, // 30 seconds
+  maxPoolSize: 50,
+  minPoolSize: 5,
   retryWrites: true,
-  w: 'majority',
+  w: 'majority' as const,
+  retryReads: true,
+  heartbeatFrequencyMS: 10000, // 10 seconds
+  waitQueueTimeoutMS: 10000, // 10 seconds
+  compressors: ['zstd', 'snappy', 'zlib'] as const,
+  zlibCompressionLevel: 6,
 };
 
-if (process.env.NODE_ENV === 'development') {
-  // In development mode, use a global variable so that the value
-  // is preserved across module reloads caused by HMR (Hot Module Replacement).
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(MONGODB_URI, options);
-    global._mongoClientPromise = client.connect();
-  }
-  clientPromise = global._mongoClientPromise;
-} else {
-  // In production mode, it's best to not use a global variable.
-  client = new MongoClient(MONGODB_URI, options);
-  clientPromise = client.connect();
-}
-
 /**
- * Get a MongoDB client instance
+ * Connect to MongoDB using Mongoose
  */
-export async function getMongoClient(): Promise<MongoClientType> {
-  if (!clientPromise) {
-    throw new Error('MongoDB client is not initialized');
+async function connectToDatabase(): Promise<Mongoose> {
+  if (cached.conn) {
+    return cached.conn;
   }
+
+  if (!cached.promise) {
+    const opts: ConnectOptions = {
+      ...mongooseOptions,
+      bufferCommands: false, // Disable mongoose buffering
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts)
+      .then((mongoose) => {
+        console.log('MongoDB connected successfully');
+        return mongoose;
+      })
+      .catch((error) => {
+        console.error('MongoDB connection error:', error);
+        throw error;
+      });
+  }
+
   try {
-    return await clientPromise;
-  } catch (error) {
-    console.error('Failed to get MongoDB client:', error);
-    throw new Error('Failed to connect to MongoDB');
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
   }
 }
 
-/**
- * Connect to the MongoDB database
- */
-export async function connectToDatabase(): Promise<{ client: MongoClientType; db: Db }> {
-  try {
-    const client = await getMongoClient();
-    const db = client.db(MONGODB_DB);
-    return { client, db };
-  } catch (error) {
-    console.error('Failed to connect to database:', error);
-    throw error;
-  }
-}
+export const getMongoClient = async () => {
+  const conn = await connectToDatabase();
+  return conn.connection.getClient();
+};
 
-export { MongoClientType };
 export default connectToDatabase;
