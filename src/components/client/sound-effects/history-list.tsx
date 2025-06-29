@@ -95,10 +95,10 @@ export function HistoryList({ historyItems }: { historyItems: HistoryItem[] }) {
                                 onClick={() => {
                                   if (item.audioUrl) {
                                     playAudio({
-                                      id: item.id,
+                                      id: item.id as string,
                                       title: item.title,
                                       voice: item.voice ?? "",
-                                      audioUrl: item.audioUrl as string,
+                                      audioUrl: item.audioUrl,
                                       service: item.service,
                                     });
                                   }
@@ -112,7 +112,7 @@ export function HistoryList({ historyItems }: { historyItems: HistoryItem[] }) {
                                   if (item.audioUrl) {
                                     const a = document.createElement("a");
                                     a.href = item.audioUrl;
-                                    a.download = `${item.title || "sound-effect"}.wav`;
+                                    a.download = `${item.title ?? "sound-effect"}.wav`;
                                     document.body.appendChild(a);
                                     a.click();
                                     document.body.removeChild(a);
