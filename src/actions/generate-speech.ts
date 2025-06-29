@@ -7,8 +7,8 @@ import { ObjectId } from 'mongodb';
 
 const STYLETTS2_API_URL = process.env.STYLETTS2_API_URL || "https://gcet--styletts2-api-fastapi-app-dev.modal.run";
 const API_KEY = process.env.STYLETTS2_API_KEY || "12345";
-const MAKE_AUDIO_API_URL = process.env.MAKE_AUDIO_API_URL || "http://localhost:8000";
-const MAKE_AUDIO_API_KEY = process.env.MAKE_AUDIO_API_KEY || "your-make-audio-api-key";
+const MAKE_AUDIO_API_URL = process.env.MAKE_AUDIO_API_URL || "https://gcet--make-an-audio-api-fastapi-app-dev.modal.run";
+const MAKE_AUDIO_API_KEY = process.env.MAKE_AUDIO_API_KEY || "make-audio-2025";
 
 export interface Voice {
   id: string;
