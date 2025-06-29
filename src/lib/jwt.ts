@@ -1,6 +1,6 @@
 // JWT implementation using Web Crypto API for Edge Runtime compatibility
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET ?? 'your-secret-key';
 
 // Convert string to Uint8Array
 function stringToUint8Array(str: string): Uint8Array {

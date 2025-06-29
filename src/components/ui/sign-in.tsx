@@ -1,6 +1,8 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 // --- HELPER COMPONENTS (ICONS) ---
 
@@ -50,7 +52,13 @@ const GlassInputWrapper = ({ children }: { children: React.ReactNode }) => (
 
 const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial, delay: string }) => (
   <div className={`animate-testimonial ${delay} flex items-start gap-3 rounded-3xl bg-card/40 dark:bg-zinc-800/40 backdrop-blur-xl border border-white/10 p-5 w-64`}>
-    <img src={testimonial.avatarSrc} className="h-10 w-10 object-cover rounded-2xl" alt="avatar" />
+    <Image 
+      src={testimonial.avatarSrc} 
+      className="h-10 w-10 object-cover rounded-2xl" 
+      alt="avatar"
+      width={40}
+      height={40}
+    />
     <div className="text-sm leading-snug">
       <p className="flex items-center gap-1 font-medium">{testimonial.name}</p>
       <p className="text-muted-foreground">{testimonial.handle}</p>

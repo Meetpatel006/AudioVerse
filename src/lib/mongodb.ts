@@ -1,4 +1,5 @@
-import mongoose, { ConnectOptions, Mongoose } from 'mongoose';
+import mongoose from 'mongoose';
+import type { ConnectOptions, Mongoose } from 'mongoose';
 
 type CachedConnection = {
   conn: Mongoose | null;
@@ -10,14 +11,14 @@ declare global {
   var mongoose: CachedConnection;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://meetpatel:meetpatel@elevenlabs-data.rb5uivt.mongodb.net/elevenlabs?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI ?? 'mongodb+srv://meetpatel:meetpatel@elevenlabs-data.rb5uivt.mongodb.net/elevenlabs?retryWrites=true&w=majority';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
 }
 
 // Initialize the cached connection
-let cached: CachedConnection = global.mongoose || { conn: null, promise: null };
+const cached: CachedConnection = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
   global.mongoose = cached;
@@ -77,4 +78,5 @@ export const getMongoClient = async () => {
   return conn.connection.getClient();
 };
 
+export { connectToDatabase };
 export default connectToDatabase;

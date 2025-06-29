@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
 
 // --- HELPER COMPONENTS (ICONS) ---
 
@@ -46,10 +47,12 @@ const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial, del
     style={{ animationDelay: delay }}
   >
     <div className="flex items-center space-x-3">
-      <img 
+      <Image 
         src={testimonial.avatarSrc} 
         alt={testimonial.name}
         className="h-10 w-10 rounded-full object-cover"
+        width={40}
+        height={40}
       />
       <div>
         <p className="font-medium text-white">{testimonial.name}</p>

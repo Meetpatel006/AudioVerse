@@ -61,7 +61,7 @@ export async function getHistoryItems(userId: string, service: ServiceType): Pro
     });
   } catch (error) {
     console.error('Error fetching history items:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    // Remove unused variable
     return [];
   }
 }
