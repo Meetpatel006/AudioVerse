@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (typeof password === 'string' && password.length < 6) {
+    if (typeof password === 'string' && (password as string).length < 6) {
       return NextResponse.json(
         { error: 'Password must be at least 6 characters long' },
         { status: 400 }
