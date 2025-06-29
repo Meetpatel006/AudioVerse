@@ -6,7 +6,7 @@ import { User } from '~/models/User';
 export async function GET(request: Request) {
   try {
     // Get token from cookies
-    const cookies = request.headers.get('cookie') || '';
+    const cookies = request.headers.get('cookie') ?? '';
     const token = cookies
       .split('; ')
       .find(row => row.startsWith('token='))?.split('=')[1];
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
 
     // Verify token
     const decoded = await verifyToken(token);
-    if (!decoded || !decoded.userId) {
+    if (!decoded?.userId) {
       return NextResponse.json(
         { error: 'Invalid token' },
         { status: 401 }
@@ -57,3 +57,4 @@ export async function GET(request: Request) {
     );
   }
 }
+
