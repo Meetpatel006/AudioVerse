@@ -7,7 +7,7 @@
 /** @type {import("next").NextConfig} */
 const config = {
   images: {
-    domains: ["images.unsplash.com"],
+    domains: ["images.unsplash.com", "ik.imagekit.io", "tailark.com", "randomuser.me"],
   },
 };
 
