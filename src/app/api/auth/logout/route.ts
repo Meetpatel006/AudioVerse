@@ -18,12 +18,13 @@ export async function POST() {
     });
 
     return response;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Logout error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return NextResponse.json(
       { 
         error: 'An error occurred during logout',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       },
       { status: 500 }
     );
