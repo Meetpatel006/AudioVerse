@@ -38,7 +38,7 @@ export default function SignIn() {
 
   useEffect(() => {
     // Check for redirect URL in query params
-    const redirectUrl = searchParams.get('from') || '/speech-synthesis/text-to-speech';
+    const redirectUrl = searchParams.get('from') ?? '/speech-synthesis/text-to-speech';
     
     // If user is already logged in, redirect them
     const checkAuth = async () => {
@@ -52,7 +52,7 @@ export default function SignIn() {
       }
     };
 
-    checkAuth();
+    void checkAuth();
   }, [router, searchParams]);
 
   const handleSignIn = async (email: string, password: string) => {
@@ -67,11 +67,12 @@ export default function SignIn() {
       toast.success('Signed in successfully!');
       
       // Redirect to the original URL or dashboard
-      const redirectUrl = searchParams.get('from') || '/speech-synthesis/text-to-speech';
+      const redirectUrl = searchParams.get('from') ?? '/speech-synthesis/text-to-speech';
       router.push(redirectUrl);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Sign in error:', error);
-      toast.error(error.message || 'Failed to sign in');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign in';
+      toast.error(errorMessage);
       throw error; // Re-throw to allow the form to handle the error
     } finally {
       setIsLoading(false);
