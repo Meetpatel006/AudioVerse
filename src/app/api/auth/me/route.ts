@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
     // Ensure we have a proper user object
     const userResponse = {
-      id: user._id.toString(),
+      id: String(user._id),
       name: user.name,
       email: user.email,
       // Add any other user properties you need
