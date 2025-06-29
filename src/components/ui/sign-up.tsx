@@ -56,7 +56,7 @@ const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial, del
         <p className="text-sm text-white/60">{testimonial.handle}</p>
       </div>
     </div>
-    <p className="text-white/80">"{testimonial.text}"</p>
+    <p className="text-white/80">{testimonial.text}</p>
   </div>
 );
 
@@ -65,7 +65,6 @@ const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial, del
 export function SignUpPage({
   title = <span className="font-light text-foreground tracking-tighter">Create Account</span>,
   description = "Join our community and start your journey with us",
-  heroImageSrc = "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?q=80&w=2574&auto=format&fit=crop",
   testimonials = [],
   onSignUp = () => {},
   onGoogleSignUp = () => {},

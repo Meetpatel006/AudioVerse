@@ -1,4 +1,4 @@
-import { Schema, model, models, Document, Model } from 'mongoose';
+import { Schema, model, Document, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
@@ -68,7 +68,7 @@ let User: IUserModel;
 try {
   // Try to get the existing model if it exists
   User = model<IUser, IUserModel>('User');
-} catch (e) {
+} catch {
   // If the model doesn't exist, create it
   User = model<IUser, IUserModel>('User', userSchema);
 }

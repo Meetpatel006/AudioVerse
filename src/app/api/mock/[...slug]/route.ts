@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getPresignedUrl } from "~/lib/s3";
+import { getPresignedUrl } from "~/lib/azure-storage";
 
 type ServiceConfig = {
   voices: string[];

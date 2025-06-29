@@ -1,6 +1,6 @@
 "use server";
 
-import { getUploadUrl } from "~/lib/s3";
+import { getUploadUrl } from "~/lib/azure-storage";
 import { addHistoryItem } from "~/lib/history";
 
 export async function generateTextToSpeech(_text: string, _voice: string) {
@@ -18,6 +18,7 @@ export async function generateTextToSpeech(_text: string, _voice: string) {
     time: new Date().toLocaleTimeString(),
     date: new Date().toLocaleDateString(),
     service: "styletts2",
+    userId: "anonymous", // TODO: Replace with actual user ID from auth
   });
 
   return {
@@ -44,6 +45,7 @@ export async function generateSpeechToSpeech(
     time: new Date().toLocaleTimeString(),
     date: new Date().toLocaleDateString(),
     service: "seedvc",
+    userId: "anonymous", // TODO: Replace with actual user ID from auth
   });
 
   return {
@@ -61,12 +63,13 @@ export async function generateSoundEffect(_prompt: string) {
 
   // After generating audio, store in history
   await addHistoryItem({
-    title: _prompt.substring(0, 50),
+    title: "Sound Effect: " + _prompt,
     voice: null,
     audioUrl: null, // Set actual URL after generation
     time: new Date().toLocaleTimeString(),
     date: new Date().toLocaleDateString(),
     service: "make-an-audio",
+    userId: "anonymous", // TODO: Replace with actual user ID from auth
   });
 
   return {
@@ -90,8 +93,11 @@ export async function generationStatus(
   });
 }
 
+/**
+ * Generate an upload URL for Azure Blob Storage
+ * @param fileType The MIME type of the file to upload
+ * @returns An object containing the upload URL and blob key
+ */
 export async function generateUploadUrl(fileType: string) {
-  // Generate an upload URL for Azure Blob Storage
-  const { uploadUrl, blobKey } = await getUploadUrl(fileType);
-  return { url: uploadUrl, key: blobKey };
+  return getUploadUrl(fileType);
 }

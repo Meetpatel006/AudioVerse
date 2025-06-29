@@ -1,7 +1,7 @@
 import type { ServiceType } from "~/types/services";
 import { getMongoClient } from "~/lib/mongodb";
 import { blobServiceClient } from "./azure-storage";
-import { ObjectId, type Document, type WithId, type Collection } from 'mongodb';
+import { ObjectId, type WithId } from 'mongodb';
 
 // Base interface for the document in MongoDB
 export interface HistoryItem {

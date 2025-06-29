@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '../../../../lib/mongodb';
 import { User } from '../../../../models/User';
 import { generateToken } from '../../../../lib/jwt';
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {

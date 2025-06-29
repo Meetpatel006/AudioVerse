@@ -53,22 +53,26 @@ export function VoiceChanger({
     try {
       setIsLoading(true);
 
-      const { url: uploadUrl, key: s3Key } = await generateUploadUrl(file.type);
+      // Get upload URL from Azure Blob Storage
+      const { uploadUrl, blobKey } = await generateUploadUrl(file.type);
 
+      // Upload the file to Azure Blob Storage
       const uploadResponse = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
         headers: {
           "Content-Type": file.type,
+          "x-ms-blob-type": "BlockBlob",
         },
       });
 
       if (!uploadResponse.ok) {
-        throw new Error("Failed to upload file to storage");
+        throw new Error("Failed to upload file to Azure Blob Storage");
       }
 
+      // Generate speech using the uploaded blob key
       const { audioId, shouldShowThrottleAlert } = await generateSpeechToSpeech(
-        s3Key,
+        blobKey,
         selectedVoice.id,
       );
 
