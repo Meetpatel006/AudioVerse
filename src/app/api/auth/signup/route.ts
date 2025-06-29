@@ -62,8 +62,8 @@ export async function POST(request: Request) {
 
   } catch (error: unknown) {
     console.error('Signup error:', error);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const errorMessage = (error instanceof Error) ? error.message : String(error);
+    // Fix the unsafe call by properly checking the type
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       { 
         error: 'An error occurred during signup',

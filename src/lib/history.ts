@@ -117,6 +117,7 @@ export async function addHistoryItem(item: NewHistoryItem): Promise<string | nul
     return insertedId ? insertedId.toHexString() : null;
   } catch (error) {
     console.error('Error adding history item:', error);
+    // Return null instead of the error
     return null;
   } finally {
     await session.endSession();

@@ -3,14 +3,16 @@ import { verifyToken } from './jwt';
 export async function getCurrentUser(request?: Request) {
   // For server components/pages
   if (typeof window === 'undefined' && request) {
-    const cookies = request.headers.get('cookie') || '';
-    const tokenMatch = cookies.match(/token=([^;]+)/);
+    const cookies = request.headers.get('cookie') ?? '';
+    // Use RegExp.exec() instead of String.match()
+    const tokenRegex = /token=([^;]+)/;
+    const tokenMatch = tokenRegex.exec(cookies);
     const token = tokenMatch ? tokenMatch[1] : null;
     
     if (!token) return null;
 
     try {
-      const decoded = verifyToken(token);
+      const decoded = await verifyToken(token);
       if (!decoded) return null;
 
       return {
@@ -25,8 +27,10 @@ export async function getCurrentUser(request?: Request) {
 
   // For client components
   if (typeof document !== 'undefined') {
-    const cookieMatch = document.cookie.match(/token=([^;]+)/);
-    const token = cookieMatch ? cookieMatch[1] : null;
+    // Use RegExp.exec() instead of String.match()
+    const tokenRegex = /token=([^;]+)/;
+    const tokenMatch = tokenRegex.exec(document.cookie);
+    const token = tokenMatch ? tokenMatch[1] : null;
     
     if (!token) return null;
 
@@ -41,7 +45,8 @@ export async function getCurrentUser(request?: Request) {
 
       if (response.ok) {
         const data = await response.json();
-        return data.user || null;
+        // Use nullish coalescing operator
+        return data.user ?? null;
       }
       return null;
     } catch (error) {
@@ -54,6 +59,7 @@ export async function getCurrentUser(request?: Request) {
 }
 
 export async function isAuthenticated(request?: Request) {
+  // Fix the misused promise by using a boolean check after awaiting
   const user = await getCurrentUser(request);
-  return !!user;
+  return user !== null;
 }

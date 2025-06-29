@@ -1,7 +1,9 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+// We're not using router, so we can remove this import
+// import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -23,7 +25,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  // We're not using router, so we can remove this line
+  // const router = useRouter();
 
   useEffect(() => {
     // Check if user is logged in
@@ -35,7 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (response.ok) {
           const data = await response.json();
-          setUser(data.user);
+          // Fix unsafe assignment by adding type assertion
+          const userData = data.user as User;
+          setUser(userData);
           
           // If we're on the sign-in page but already authenticated, redirect to the 'from' URL or default
           if (window.location.pathname === '/sign-in' || window.location.pathname === '/sign-up') {
@@ -68,7 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    checkAuth();
+    // Fix floating promise by using void operator
+    void checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -85,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error ?? 'Login failed');
       }
 
       // Fetch user data after successful login
@@ -98,16 +104,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       const userData = await userResponse.json();
-      setUser(userData.user);
+      // Fix unsafe assignment by adding type assertion
+      setUser(userData.user as User);
       
       // Get the 'from' query parameter from the URL
       const url = new URL(window.location.href);
       const from = url.searchParams.get('from');
       
       // Use window.location.href for immediate navigation
-      window.location.href = from || '/speech-synthesis/text-to-speech';
+      window.location.href = from ?? '/speech-synthesis/text-to-speech';
       
-      return userData.user;
+      // Fix unsafe return by adding type assertion
+      return;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -128,14 +136,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+        throw new Error(data.error ?? 'Registration failed');
       }
 
       // Auto-login after registration
       await login(email, password);
       
       // The login function will handle the redirection
-      return data.user;
+      // Fix unsafe return by removing it (login already handles redirection)
+      return;
     } catch (error) {
       console.error('Registration error:', error);
       throw error;

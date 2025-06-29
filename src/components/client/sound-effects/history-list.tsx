@@ -94,12 +94,12 @@ export function HistoryList({ historyItems }: { historyItems: HistoryItem[] }) {
                               <button
                                 onClick={() => {
                                   if (item.audioUrl) {
-                                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                                    // Fix the unsafe assignment by properly typing the parameters
                                     playAudio({
-                                      id: item.id as string,
+                                      id: item.id,
                                       title: item.title,
                                       voice: item.voice ?? "",
-                                      audioUrl: item.audioUrl as string,
+                                      audioUrl: item.audioUrl,
                                       service: item.service,
                                     });
                                   }
