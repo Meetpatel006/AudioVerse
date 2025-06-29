@@ -7,6 +7,8 @@ import { ObjectId } from 'mongodb';
 
 const STYLETTS2_API_URL = process.env.STYLETTS2_API_URL || "https://gcet--styletts2-api-fastapi-app-dev.modal.run";
 const API_KEY = process.env.STYLETTS2_API_KEY || "12345";
+const MAKE_AUDIO_API_URL = process.env.MAKE_AUDIO_API_URL || "http://localhost:8000";
+const MAKE_AUDIO_API_KEY = process.env.MAKE_AUDIO_API_KEY || "your-make-audio-api-key";
 
 export interface Voice {
   id: string;
@@ -126,28 +128,63 @@ export async function generateSpeechToSpeech(
   };
 }
 
-export async function generateSoundEffect(_prompt: string) {
-  // Generate a unique ID for this audio generation
-  const audioId = Math.random().toString(36).substring(2, 15);
+interface GenerateSoundEffectResponse {
+  audioId: string;
+  shouldShowThrottleAlert: boolean;
+  audioUrl?: string;
+}
 
-  // In a real implementation, you would call your sound effect generation API here
-  // const result = await callSoundEffectAPI(prompt);
+export async function generateSoundEffect(prompt: string, userId: string): Promise<GenerateSoundEffectResponse> {
+  try {
+    // Generate a unique ID for this audio generation
+    const audioId = Math.random().toString(36).substring(2, 15);
 
-  // After generating audio, store in history
-  await addHistoryItem({
-    title: "Sound Effect: " + _prompt,
-    voice: null,
-    audioUrl: null, // Set actual URL after generation
-    time: new Date().toLocaleTimeString(),
-    date: new Date().toLocaleDateString(),
-    service: "make-an-audio",
-    userId: "anonymous", // TODO: Replace with actual user ID from auth
-  });
+    // Call the Make-An-Audio API
+    const response = await fetch(`${MAKE_AUDIO_API_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MAKE_AUDIO_API_KEY}`
+      },
+      body: JSON.stringify({
+        prompt: prompt
+      })
+    });
 
-  return {
-    audioId,
-    shouldShowThrottleAlert: false,
-  };
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.detail || 'Failed to generate sound effect');
+    }
+
+    const data = await response.json();
+    const audioUrl = data.audio_url;
+    const blobName = data.blob_name;
+
+    if (!audioUrl) {
+      throw new Error('No audio URL returned from the API');
+    }
+
+    // Store in history
+    await addHistoryItem({
+      title: "Sound Effect: " + (prompt.substring(0, 50) + (prompt.length > 50 ? '...' : '')),
+      voice: null,
+      audioUrl: audioUrl,
+      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString(),
+      service: "make-an-audio",
+      userId: userId || 'anonymous',
+      blobName: blobName
+    });
+
+    return {
+      audioId,
+      shouldShowThrottleAlert: false,
+      audioUrl
+    };
+  } catch (error) {
+    console.error('Error generating sound effect:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to generate sound effect');
+  }
 }
 
 export async function generationStatus(

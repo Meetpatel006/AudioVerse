@@ -21,7 +21,7 @@ import toast from "react-hot-toast";
 
 const MAX_CHARS = 500;
 
-export function SoundEffectsGenerator({ credits }: { credits: number }) {
+export function SoundEffectsGenerator({ credits, userId }: { credits: number; userId: string }) {
   const [textContent, setTextContent] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [activePlaceholder, setActivePlaceholder] = useState(
@@ -38,8 +38,19 @@ export function SoundEffectsGenerator({ credits }: { credits: number }) {
 
     try {
       setLoading(true);
-      const { audioId, shouldShowThrottleAlert } =
-        await generateSoundEffect(textContent);
+      const { audioId, shouldShowThrottleAlert, audioUrl } =
+        await generateSoundEffect(textContent, userId);
+        
+      if (audioUrl) {
+        // Play the audio immediately after generation
+        playAudio({
+          id: audioId,
+          title: `Sound Effect: ${textContent.substring(0, 30)}${textContent.length > 30 ? '...' : ''}`,
+          voice: null,
+          audioUrl: audioUrl,
+          service: 'make-an-audio'
+        });
+      }
       if (shouldShowThrottleAlert) {
         toast("Exceeding 3 requests per minute will queue your requests.", {
           icon: "⏳",

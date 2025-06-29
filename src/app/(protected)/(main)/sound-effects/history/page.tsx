@@ -1,7 +1,7 @@
 import { PageLayout } from "~/components/client/page-layout";
 import { HistoryList } from "~/components/client/sound-effects/history-list";
 import { getHistoryItems } from "~/lib/history";
-import { headers } from "next/headers";
+import { headers } from 'next/headers';
 
 export default async function SoundEffectsHistoryPage() {
   const soundEffectsTabs = [
@@ -17,7 +17,7 @@ export default async function SoundEffectsHistoryPage() {
 
   const service = "make-an-audio";
   
-  // Get user ID from headers set by middleware
+  // Get user ID from headers
   const headersList = await headers();
   const userId = headersList.get('x-user-id');
   
