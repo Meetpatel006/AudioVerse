@@ -1,4 +1,4 @@
-import { Schema, model, Document, Model } from 'mongoose';
+import { type Schema, model, type Document, type Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
@@ -10,11 +10,7 @@ export interface IUser extends Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-export interface IUserModel extends Model<IUser> {
-  // Add any static methods here
-}
-
-const userSchema = new Schema<IUser, IUserModel>(
+const userSchema: Schema<IUser> = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -45,32 +41,32 @@ const userSchema = new Schema<IUser, IUserModel>(
 );
 
 // Hash password before saving
-userSchema.pre('save', async function (next) {
+userSchema.pre<IUser>('save', async function (next) {
   if (!this.isModified('password')) return next();
   
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error: any) {
-    next(error);
+  } catch (error) {
+    next(error as Error);
   }
 });
 
 // Method to compare password
-userSchema.methods.comparePassword = async function (candidatePassword: string) {
-  return await bcrypt.compare(candidatePassword, this.password);
+userSchema.methods.comparePassword = async function (this: IUser, candidatePassword: string): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
 // Check if the model has already been compiled
-let User: IUserModel;
+let User: Model<IUser>;
 
 try {
   // Try to get the existing model if it exists
-  User = model<IUser, IUserModel>('User');
+  User = model<IUser>('User');
 } catch {
   // If the model doesn't exist, create it
-  User = model<IUser, IUserModel>('User', userSchema);
+  User = model<IUser>('User', userSchema);
 }
 
 export { User };
