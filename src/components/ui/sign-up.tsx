@@ -66,9 +66,9 @@ export function SignUpPage({
   title = <span className="font-light text-foreground tracking-tighter">Create Account</span>,
   description = "Join our community and start your journey with us",
   testimonials = [],
-  onSignUp = () => {},
-  onGoogleSignUp = () => {},
-  onSignIn = () => {},
+  onSignUp = () => { /* noop */ },
+  onGoogleSignUp = () => { /* noop */ },
+  onSignIn = () => { /* noop */ },
 }: SignUpPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

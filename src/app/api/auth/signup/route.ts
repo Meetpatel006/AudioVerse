@@ -60,9 +60,9 @@ export async function POST(request: Request) {
       { status: 201 }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Signup error:', error);
-    const errorMessage = (error instanceof Error) ? error.message : 'An unknown error occurred';
+    const errorMessage = (error instanceof Error) ? error.message : String(error);
     return NextResponse.json(
       { 
         error: 'An error occurred during signup',

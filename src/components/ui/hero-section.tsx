@@ -253,23 +253,23 @@ export function HeroSection() {
                                 />
                             </div>
                             <div className="flex">
-                                <img
+                                <Image
                                     className="mx-auto h-7 w-fit dark:invert"
                                     src="https://html.tailus.io/blocks/customers/lilly.svg"
                                     alt="Lilly Logo"
-                                    height="28"
-                                    width="auto"
+                                    height={28}
+                                    width={0}
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
 
                             <div className="flex">
-                                <img
+                                <Image
                                     className="mx-auto h-6 w-fit dark:invert"
                                     src="https://html.tailus.io/blocks/customers/openai.svg"
                                     alt="OpenAI Logo"
-                                    height="24"
-                                    width="auto"
+                                    height={24}
+                                    width={0}
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
