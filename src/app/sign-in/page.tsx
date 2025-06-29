@@ -3,7 +3,7 @@
 import { SignInPage, type Testimonial } from '../../components/ui/sign-in';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { toast } from 'react-hot-toast';
 
 const sampleTestimonials: Testimonial[] = [
@@ -27,7 +27,7 @@ const sampleTestimonials: Testimonial[] = [
   },
 ];
 
-export default function SignIn() {
+function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -113,5 +113,13 @@ export default function SignIn() {
       rememberMe={rememberMe}
       setRememberMe={setRememberMe}
     />
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInContent />
+    </Suspense>
   );
 }

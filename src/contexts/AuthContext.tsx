@@ -2,8 +2,18 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-// We're not using router, so we can remove this import
-// import { useRouter } from 'next/navigation';
+
+// API Response Types
+interface AuthResponse {
+  message?: string;
+  user?: User;
+  error?: string;
+}
+
+interface UserResponse {
+  user: User;
+  error?: string;
+}
 
 interface User {
   id: string;
@@ -37,10 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         
         if (response.ok) {
-          const data = await response.json();
-          // Fix unsafe assignment by adding type assertion
-          const userData = data.user as User;
-          setUser(userData);
+          const data = await response.json() as UserResponse;
+          setUser(data.user);
           
           // If we're on the sign-in page but already authenticated, redirect to the 'from' URL or default
           if (window.location.pathname === '/sign-in' || window.location.pathname === '/sign-up') {
@@ -88,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include', // Important for cookies to be sent
       });
 
-      const data = await response.json();
+      const data = await response.json() as AuthResponse;
 
       if (!response.ok) {
         throw new Error(data.error ?? 'Login failed');
@@ -103,9 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Failed to fetch user data');
       }
       
-      const userData = await userResponse.json();
-      // Fix unsafe assignment by adding type assertion
-      setUser(userData.user as User);
+      const userData = await userResponse.json() as UserResponse;
+      setUser(userData.user);
       
       // Get the 'from' query parameter from the URL
       const url = new URL(window.location.href);
@@ -133,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
 
-      const data = await response.json();
+      const data = await response.json() as AuthResponse;
 
       if (!response.ok) {
         throw new Error(data.error ?? 'Registration failed');

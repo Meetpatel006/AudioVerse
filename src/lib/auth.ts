@@ -1,5 +1,15 @@
 import { verifyToken } from './jwt';
 
+// API Response Types
+interface UserResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  error?: string;
+}
+
 export async function getCurrentUser(request?: Request) {
   // For server components/pages
   if (typeof window === 'undefined' && request) {
@@ -44,8 +54,7 @@ export async function getCurrentUser(request?: Request) {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        // Use nullish coalescing operator
+        const data = await response.json() as UserResponse;
         return data.user ?? null;
       }
       return null;

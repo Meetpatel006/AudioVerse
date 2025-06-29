@@ -80,7 +80,7 @@ export async function addHistoryItem(item: NewHistoryItem): Promise<string | nul
       return null;
     }
     
-    let insertedId: ObjectId | null = null;
+    let insertedId: ObjectId | undefined;
     
     await session.withTransaction(async () => {
       const db = client.db();
@@ -114,7 +114,7 @@ export async function addHistoryItem(item: NewHistoryItem): Promise<string | nul
     });
     
     // Safely convert ObjectId to string
-    return insertedId ? insertedId.toHexString() : null;
+    return insertedId ? insertedId.toString() : null;
   } catch (error) {
     console.error('Error adding history item:', error);
     // Return null instead of the error
