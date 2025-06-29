@@ -98,7 +98,7 @@ export function HistoryList({ historyItems }: { historyItems: HistoryItem[] }) {
                                       id: item.id as string,
                                       title: item.title,
                                       voice: item.voice ?? "",
-                                      audioUrl: item.audioUrl,
+                                      audioUrl: item.audioUrl as string,
                                       service: item.service,
                                     });
                                   }

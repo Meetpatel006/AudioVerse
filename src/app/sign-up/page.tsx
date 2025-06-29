@@ -30,6 +30,7 @@ const sampleTestimonials: Testimonial[] = [
 export default function SignUp() {
   const router = useRouter();
   const { register } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
