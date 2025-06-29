@@ -160,19 +160,19 @@ export function HeroSection() {
                                     className="bg-gradient-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
                                 />
                                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
-                                    <img
+                                    <Image
                                         className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
                                         src="https://tailark.com//_next/image?url=%2Fmail2.png&w=3840&q=75"
                                         alt="app screen"
-                                        width="2700"
-                                        height="1440"
+                                        width={2700}
+                                        height={1440}
                                     />
-                                    <img
+                                    <Image
                                         className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
                                         src="https://tailark.com/_next/image?url=%2Fmail2-light.png&w=3840&q=75"
                                         alt="app screen"
-                                        width="2700"
-                                        height="1440"
+                                        width={2700}
+                                        height={1440}
                                     />
                                 </div>
                             </div>
@@ -192,33 +192,33 @@ export function HeroSection() {
                         </div>
                         <div className="group-hover:blur-xs mx-auto mt-12 grid max-w-2xl grid-cols-4 gap-x-12 gap-y-8 transition-all duration-500 group-hover:opacity-50 sm:gap-x-16 sm:gap-y-14">
                             <div className="flex">
-                                <img
+                                <Image
                                     className="mx-auto h-5 w-fit dark:invert"
                                     src="https://html.tailus.io/blocks/customers/nvidia.svg"
                                     alt="Nvidia Logo"
-                                    height="20"
-                                    width="auto"
+                                    height={20}
+                                    width={0}
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
 
                             <div className="flex">
-                                <img
-                                    className="mx-auto h-4 w-fit dark:invert"
-                                    src="https://html.tailus.io/blocks/customers/column.svg"
-                                    alt="Column Logo"
-                                    height="20"
-                                    width="auto"
+                                <Image
+                                    className="mx-auto h-5 w-fit dark:invert"
+                                    src="https://html.tailus.io/blocks/customers/nvidia.svg"
+                                    alt="Nvidia Logo"
+                                    height={20}
+                                    width={0}
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
                             <div className="flex">
-                                <img
+                                <Image
                                     className="mx-auto h-4 w-fit dark:invert"
-                                    src="https://html.tailus.io/blocks/customers/github.svg"
-                                    alt="GitHub Logo"
-                                    height="20"
-                                    width="auto"
+                                    src="https://html.tailus.io/blocks/customers/column.svg"
+                                    alt="Column Logo"
+                                    height={20}
+                                    width={0}
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
