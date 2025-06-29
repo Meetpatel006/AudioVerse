@@ -16,7 +16,17 @@ export interface Voice {
   preview_url?: string;
 }
 
-export async function getAvailableVoices(): Promise<Voice[]> {
+export async function getAvailableVoices(service: string = 'styletts2'): Promise<Voice[]> {
+  if (service === 'seedvc') {
+    // Return the voices supported by Seed-VC
+    return [
+      { id: 'male', name: 'Male' },
+      { id: 'female', name: 'Female' },
+      { id: 'trump', name: 'Donald Trump' }
+    ];
+  }
+  
+  // Default to StyleTTS2 voices
   try {
     const response = await fetch(`${STYLETTS2_API_URL}/voices`, {
       method: 'GET',
@@ -101,31 +111,66 @@ export async function generateTextToSpeech(text: string, voice: string, userId: 
   }
 }
 
+const SEED_VC_API_URL = process.env.SEED_VC_API_URL || "https://gcet--seed-vc-api-fastapi-app-dev.modal.run";
+const SEED_VC_API_KEY = process.env.SEED_VC_API_KEY || "seed-vc-2025";
+
 export async function generateSpeechToSpeech(
-  _originalVoiceS3Key: string,
-  _voice: string,
+  sourceAudioKey: string,
+  targetVoice: string,
+  userId: string,
+  fileName: string = "voice_changed_audio"
 ) {
-  // Generate a unique ID for this audio generation
-  const audioId = Math.random().toString(36).substring(2, 15);
+  try {
+    // Generate a unique ID for this audio generation
+    const audioId = Math.random().toString(36).substring(2, 15);
+    
+    // Call the Seed-VC API
+    const response = await fetch(`${SEED_VC_API_URL}/convert`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SEED_VC_API_KEY}`
+      },
+      body: JSON.stringify({
+        source_audio_key: sourceAudioKey,
+        target_voice: targetVoice
+      })
+    });
 
-  // In a real implementation, you would call your speech-to-speech API here
-  // const result = await callSpeechToSpeechAPI(originalVoiceS3Key, voice);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.detail || 'Failed to convert voice');
+    }
 
-  // After generating audio, store in history
-  await addHistoryItem({
-    title: "Speech to Speech",
-    voice: _voice,
-    audioUrl: null, // Set actual URL after generation
-    time: new Date().toLocaleTimeString(),
-    date: new Date().toLocaleDateString(),
-    service: "seedvc",
-    userId: "anonymous", // TODO: Replace with actual user ID from auth
-  });
+    const data = await response.json();
+    const audioUrl = data.audio_url;
+    const blobName = data.blob_name;
 
-  return {
-    audioId,
-    shouldShowThrottleAlert: false,
-  };
+    if (!audioUrl) {
+      throw new Error('No audio URL returned from the API');
+    }
+
+    // Store in history
+    await addHistoryItem({
+      title: `Voice Changed: ${fileName} (${targetVoice} voice)`,
+      voice: targetVoice,
+      audioUrl: audioUrl,
+      time: new Date().toLocaleTimeString(),
+      date: new Date().toLocaleDateString(),
+      service: "seedvc",
+      userId: userId,
+      blobName: blobName
+    });
+
+    return {
+      audioId,
+      shouldShowThrottleAlert: false,
+      audioUrl
+    };
+  } catch (error) {
+    console.error('Error in speech-to-speech conversion:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to convert voice');
+  }
 }
 
 interface GenerateSoundEffectResponse {
@@ -190,25 +235,13 @@ export async function generateSoundEffect(prompt: string, userId: string): Promi
 export async function generationStatus(
   audioId: string
 ): Promise<{ success: boolean; audioUrl: string | null }> {
-  // In this implementation, we'll assume the audio is immediately available
-  // since the StyleTTS2 API returns the URL directly
-  // If you need to implement polling for long-running tasks, you can modify this
-  
-  // For now, we'll just return the audio URL if we have it in the history
   try {
-    const client = await getMongoClient();
-    const db = client.db();
-    const collection = db.collection('audio_history');
+    // For Seed-VC, the audio is typically generated synchronously, so we don't need to poll
+    // But we'll keep this function for backward compatibility
+    // If the audio was generated successfully, it would have been returned in the initial response
+    // So if we're checking status, it likely means the audio is not ready or failed
     
-    const item = await collection.findOne({ _id: new ObjectId(audioId) });
-    
-    if (item && item.audioUrl) {
-      return {
-        success: true,
-        audioUrl: item.audioUrl
-      };
-    }
-    
+    // Return a failure status to stop polling
     return {
       success: false,
       audioUrl: null

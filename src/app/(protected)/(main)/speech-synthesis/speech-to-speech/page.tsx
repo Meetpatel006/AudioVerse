@@ -25,7 +25,7 @@ export default async function SpeechToSpeechPage() {
       showSidebar={true}
       historyItems={historyItems}
     >
-      <VoiceChanger credits={credits} service={service} />
+      <VoiceChanger credits={credits} service={service} userId={userId} />
     </PageLayout>
   );
 }
