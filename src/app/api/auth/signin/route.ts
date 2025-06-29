@@ -60,6 +60,7 @@ export async function POST(request: Request) {
     }
 
     // Create JWT token
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     const token = await generateToken(userObj._id.toString());
 
     // Don't send password back

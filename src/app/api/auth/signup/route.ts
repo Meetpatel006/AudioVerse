@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '../../../../lib/mongodb';
-import { User } from '../../../../models/User';
+import { User, type IUser } from '../../../../models/User';
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, confirmPassword } = await request.json();
+    const { name, email, password, confirmPassword } = await request.json() as IUser & { confirmPassword: string };
 
     // Validate input
     if (!name || !email || !password || !confirmPassword) {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (password.length < 6) {
+    if (typeof password === 'string' && password.length < 6) {
       return NextResponse.json(
         { error: 'Password must be at least 6 characters long' },
         { status: 400 }
@@ -49,6 +49,7 @@ export async function POST(request: Request) {
 
     // Convert to plain object and remove password
     const userObject = user.toObject();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = userObject;
     
     return NextResponse.json(
@@ -59,12 +60,13 @@ export async function POST(request: Request) {
       { status: 201 }
     );
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Signup error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return NextResponse.json(
       { 
         error: 'An error occurred during signup',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       },
       { status: 500 }
     );

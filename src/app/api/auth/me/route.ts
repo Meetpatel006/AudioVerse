@@ -42,7 +42,8 @@ export async function GET(request: Request) {
 
     // Ensure we have a proper user object
     const userResponse = {
-      id: String(user._id),
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      id: user._id.toString(),
       name: user.name,
       email: user.email,
       // Add any other user properties you need
