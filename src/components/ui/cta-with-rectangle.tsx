@@ -36,13 +36,13 @@ export function CTASection({
             variant="outline"
             className="opacity-0 animate-fade-in-up delay-100"
           >
-            <span className="text-muted-foreground">{badge.text || "Start Free Today"}</span>
+            <span className="text-muted-foreground">{badge.text ?? "Start Free Today"}</span>
           </Badge>
         )}
 
         {/* Title */}
         <h2 className="text-3xl font-semibold sm:text-5xl opacity-0 animate-fade-in-up delay-200">
-          {title || "Experience the Future of Audio Creation"}
+          {title ?? "Experience the Future of Audio Creation"}
         </h2>
 
         {/* Description */}
@@ -54,12 +54,12 @@ export function CTASection({
 
         {/* Action Button */}
         <Button
-          variant={action?.variant || "default"}
+          variant={action?.variant ?? "default"}
           size="lg"
           className="opacity-0 animate-fade-in-up delay-500"
           asChild
         >
-          <a href={action?.href || "#"}>{action?.text || "Get Started for Free"}</a>
+          <a href={action?.href ?? "#"}>{action?.text ?? "Get Started for Free"}</a>
         </Button>
 
         {/* Glow Effect */}
