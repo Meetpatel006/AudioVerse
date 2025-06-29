@@ -223,32 +223,32 @@ export function HeroSection() {
                                 />
                             </div>
                             <div className="flex">
-                                <img
+                                <Image
+                                    className="mx-auto h-4 w-fit dark:invert"
+                                    src="https://html.tailus.io/blocks/customers/github.svg"
+                                    alt="GitHub Logo"
+                                    height={20}
+                                    width={0}
+                                    style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
+                                />
+                            </div>
+                            <div className="flex">
+                                <Image
                                     className="mx-auto h-5 w-fit dark:invert"
                                     src="https://html.tailus.io/blocks/customers/nike.svg"
                                     alt="Nike Logo"
-                                    height="20"
-                                    width="auto"
+                                    height={20}
+                                    width={0}
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
                             <div className="flex">
-                                <img
-                                    className="mx-auto h-5 w-fit dark:invert"
-                                    src="https://html.tailus.io/blocks/customers/lemonsqueezy.svg"
-                                    alt="Lemon Squeezy Logo"
-                                    height="20"
-                                    width="auto"
-                                    style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
-                                />
-                            </div>
-                            <div className="flex">
-                                <img
+                                <Image
                                     className="mx-auto h-4 w-fit dark:invert"
-                                    src="https://html.tailus.io/blocks/customers/laravel.svg"
-                                    alt="Laravel Logo"
-                                    height="20"
-                                    width="auto"
+                                    src="https://html.tailus.io/blocks/customers/column.svg"
+                                    alt="Column Logo"
+                                    height={20}
+                                    width={0}
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>

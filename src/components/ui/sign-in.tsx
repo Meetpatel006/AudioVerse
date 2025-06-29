@@ -73,10 +73,10 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   isLoading = false,
   email = '',
   password = '',
-  setEmail = () => {},
-  setPassword = () => {},
+  setEmail = () => { /* noop */ },
+  setPassword = () => { /* noop */ },
   rememberMe = false,
-  setRememberMe = () => {},
+  setRememberMe = () => { /* noop */ },
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
