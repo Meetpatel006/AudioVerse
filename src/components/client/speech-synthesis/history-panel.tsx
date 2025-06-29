@@ -1,7 +1,7 @@
 "use client";
 
 import { IoDownloadOutline, IoPlay } from "react-icons/io5";
-import type { HistoryItem as HistoryItemType } from "~/lib/history";
+import type { ClientHistoryItem as HistoryItemType } from "~/lib/history";
 import { useAudioStore } from "~/stores/audio-store";
 import { useVoiceStore, type Voice } from "~/stores/voice-store";
 import type { ServiceType } from "~/types/services";

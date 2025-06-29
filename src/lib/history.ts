@@ -26,7 +26,7 @@ type NewHistoryItem = Omit<HistoryItem, '_id' | 'createdAt' | 'updatedAt'> & {
 };
 
 // Type for the client-side representation
-type ClientHistoryItem = Omit<HistoryItem, '_id'> & {
+export type ClientHistoryItem = Omit<HistoryItem, '_id'> & {
   id: string;
   _id?: never; // Ensure _id is not present in the client-side type
 };

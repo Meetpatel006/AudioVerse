@@ -5,10 +5,10 @@ import {
   IoPlayOutline,
   IoVolumeHighOutline,
 } from "react-icons/io5";
-import type { HistoryItem } from "~/lib/history";
+import type { ClientHistoryItem } from "~/lib/history";
 import { useAudioStore } from "~/stores/audio-store";
 
-export function HistoryList({ historyItems }: { historyItems: HistoryItem[] }) {
+export function HistoryList({ historyItems }: { historyItems: ClientHistoryItem[] }) {
   const { playAudio } = useAudioStore();
 
   const groupedItems = historyItems.reduce(

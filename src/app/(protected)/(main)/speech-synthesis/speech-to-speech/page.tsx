@@ -1,10 +1,20 @@
 import { PageLayout } from "~/components/client/page-layout";
 import { VoiceChanger } from "~/components/client/speech-synthesis/voice-changer";
 import { getHistoryItems } from "~/lib/history";
+import { headers } from "next/headers";
 
 export default async function SpeechToSpeechPage() {
   const service = "seedvc";
-  const historyItems = await getHistoryItems(service);
+  
+  // Get user ID from headers set by middleware
+  const headersList = await headers();
+  const userId = headersList.get('x-user-id');
+  
+  if (!userId) {
+    throw new Error('User not authenticated');
+  }
+  
+  const historyItems = await getHistoryItems(userId, service);
   // Set a default number of credits or implement your own logic
   const credits = 1000;
 

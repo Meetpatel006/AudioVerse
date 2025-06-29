@@ -8,7 +8,7 @@ import { IoClose, IoMenu } from "react-icons/io5";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SpeechSidebar } from "./speech-synthesis/right-sidebar";
-import type { HistoryItem } from "~/lib/history";
+import type { ClientHistoryItem } from "~/lib/history";
 import Playbar from "./playbar";
 import { useAudioStore } from "~/stores/audio-store";
 import { MobileSettingsButton } from "./speech-synthesis/mobile-settings-button";
@@ -31,7 +31,7 @@ export function PageLayout({
   service: ServiceType;
   tabs?: TabItem[];
   showSidebar: boolean;
-  historyItems?: HistoryItem[];
+  historyItems?: ClientHistoryItem[];
 }) {
   const pathname = usePathname();
   const {

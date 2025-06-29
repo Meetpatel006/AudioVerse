@@ -5,7 +5,7 @@ import type { ServiceType } from "~/types/services";
 import { VoiceSelector } from "../voice-selector";
 import { HistoryPanel } from "./history-panel";
 import { useState } from "react";
-import type { HistoryItem } from "~/lib/history";
+import type { ClientHistoryItem } from "~/lib/history";
 import { IoClose } from "react-icons/io5";
 
 export function SpeechSidebar({
@@ -13,7 +13,7 @@ export function SpeechSidebar({
   historyItems,
 }: {
   service: ServiceType;
-  historyItems?: HistoryItem[];
+  historyItems?: ClientHistoryItem[];
 }) {
   const {
     activeTab,
