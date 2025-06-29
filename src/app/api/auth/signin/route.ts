@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '../../../../lib/mongodb';
-import { User } from '../../../../models/User';
+import { User, type IUser } from '../../../../models/User';
 import { generateToken } from '../../../../lib/jwt';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password } = await request.json() as IUser;
 
     // Validate input
     if (!email || !password) {
@@ -63,6 +63,7 @@ export async function POST(request: Request) {
     const token = await generateToken(userObj._id.toString());
 
     // Don't send password back
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = userObj;
     
     // Set HTTP-only cookie
@@ -87,12 +88,13 @@ export async function POST(request: Request) {
 
     return response;
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Login error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return NextResponse.json(
       { 
         error: 'An error occurred during login',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       },
       { status: 500 }
     );
