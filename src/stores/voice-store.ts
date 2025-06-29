@@ -18,8 +18,8 @@ export interface Voice {
 
 const voices: Voice[] = [
   {
-    id: "andreas",
-    name: "Andreas",
+    id: "man",
+    name: "Man",
     gradientColors: GRADIENT_COLORS[0]!,
     service: "styletts2",
   },
@@ -30,8 +30,8 @@ const voices: Voice[] = [
     service: "styletts2",
   },
   {
-    id: "andreas",
-    name: "Andreas",
+    id: "man",
+    name: "Man",
     gradientColors: GRADIENT_COLORS[0]!,
     service: "seedvc",
   },

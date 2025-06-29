@@ -10,23 +10,29 @@ import {
   IoLeafOutline,
   IoMegaphoneOutline,
   IoMicOutline,
+  IoChevronDownOutline,
 } from "react-icons/io5";
 import type { ServiceType } from "~/types/services";
 import { GenerateButton } from "../generate-button";
 import {
   generateTextToSpeech,
   generationStatus,
+  getAvailableVoices,
+  type Voice,
 } from "~/actions/generate-speech";
 import { useVoiceStore } from "~/stores/voice-store";
 import { useAudioStore } from "~/stores/audio-store";
 import toast from "react-hot-toast";
+import { cn } from "~/lib/utils";
 
 export function TextToSpeechEditor({
   service,
   credits,
+  userId,
 }: {
   service: ServiceType;
   credits: number;
+  userId: string;
 }) {
   const [textContent, setTextContent] = useState("");
   const [activePlaceholder, setActivePlaceholder] = useState(
@@ -34,10 +40,43 @@ export function TextToSpeechEditor({
   );
   const [loading, setLoading] = useState(false);
   const [currentAudioId, setCurrentAudioId] = useState<string | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
+  const [isVoiceDropdownOpen, setIsVoiceDropdownOpen] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<Voice | null>(null);
 
   const getSelectedVoice = useVoiceStore((state) => state.getSelectedVoice);
-
+  const selectVoice = useVoiceStore((state) => state.selectVoice);
   const { playAudio } = useAudioStore();
+
+  // Fetch available voices on component mount
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        const voices = await getAvailableVoices();
+        setAvailableVoices(voices);
+        
+        // Set the first voice as default if none is selected
+        if (voices.length > 0 && !selectedVoice) {
+          const defaultVoice = voices[0];
+          if (defaultVoice) {
+            setSelectedVoice(defaultVoice);
+            selectVoice(service, defaultVoice.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching voices:", error);
+        toast.error("Failed to load voices");
+      }
+    };
+
+    fetchVoices();
+  }, [service, selectedVoice, selectVoice]);
+
+  const handleVoiceSelect = (voice: Voice) => {
+    setSelectedVoice(voice);
+    selectVoice(service, voice.id);
+    setIsVoiceDropdownOpen(false);
+  };
 
   useEffect(() => {
     if (!currentAudioId || !loading) return;
@@ -136,13 +175,17 @@ export function TextToSpeechEditor({
   const handleGenerateSpeech = async (): Promise<void> => {
     const selectedVoice = getSelectedVoice("styletts2");
 
-    if (textContent.trim().length === 0 || !selectedVoice) return;
+    if (textContent.trim().length === 0 || !selectedVoice) {
+      toast.error("Please select a voice and enter some text");
+      return;
+    }
 
     try {
       setLoading(true);
-      const { audioId, shouldShowThrottleAlert } = await generateTextToSpeech(
+      const { audioId, shouldShowThrottleAlert, audioUrl } = await generateTextToSpeech(
         textContent,
-        selectedVoice?.id,
+        selectedVoice.id,
+        userId
       );
 
       if (shouldShowThrottleAlert) {
@@ -151,22 +194,75 @@ export function TextToSpeechEditor({
         });
       }
 
-      setCurrentAudioId(audioId);
+      // If we have the audio URL immediately, update the UI
+      if (audioUrl) {
+        const newAudio = {
+          id: audioId,
+          title: `${textContent.substring(0, 50)}${textContent.length > 50 ? "..." : ""}`,
+          audioUrl: audioUrl,
+          voice: selectedVoice.id,
+          duration: "0:30", // You might want to calculate this based on the audio
+          progress: 0,
+          service: "styletts2",
+          createdAt: new Date().toLocaleDateString("en-US"),
+        };
+        playAudio(newAudio);
+        setLoading(false);
+      } else {
+        // If we need to poll for the audio, set up the polling
+        setCurrentAudioId(audioId);
+      }
     } catch (error) {
       console.error("Error generating speech: ", error);
+      toast.error(error instanceof Error ? error.message : "Failed to generate speech");
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <textarea
-        value={textContent}
-        onChange={(e) => setTextContent(e.target.value)}
-        placeholder={activePlaceholder}
-        disabled={loading}
-        className="w-full flex-grow resize-none rounded-lg bg-white p-4 placeholder:font-light placeholder:text-gray-500 focus:border-none focus:outline-none focus:ring-0"
-      />
+    <div className="flex flex-col h-full">
+      {/* Voice selector */}
+      <div className="relative mb-4">
+        <button
+          type="button"
+          className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-left bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
+          disabled={availableVoices.length === 0}
+        >
+          <span>{selectedVoice ? selectedVoice.name : 'Select a voice...'}</span>
+          <IoChevronDownOutline className="w-4 h-4 ml-2 text-gray-400" />
+        </button>
+
+        {isVoiceDropdownOpen && (
+          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+            <div className="py-1">
+              {availableVoices.map((voice) => (
+                <button
+                  key={voice.id}
+                  className={cn(
+                    'block w-full px-4 py-2 text-sm text-left hover:bg-gray-100',
+                    selectedVoice?.id === voice.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                  )}
+                  onClick={() => handleVoiceSelect(voice)}
+                >
+                  {voice.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Text area */}
+      <div className="flex-grow">
+        <textarea
+          value={textContent}
+          onChange={(e) => setTextContent(e.target.value)}
+          placeholder={activePlaceholder}
+          disabled={loading}
+          className="w-full h-full min-h-[200px] resize-none rounded-lg bg-white p-4 placeholder:font-light placeholder:text-gray-500 focus:border-none focus:outline-none focus:ring-0"
+        />
+      </div>
 
       <div className="mt-4 px-0 md:px-4">
         {textContent.length === 0 ? (
@@ -236,6 +332,6 @@ export function TextToSpeechEditor({
           />
         )}
       </div>
-    </>
+    </div>
   );
 }

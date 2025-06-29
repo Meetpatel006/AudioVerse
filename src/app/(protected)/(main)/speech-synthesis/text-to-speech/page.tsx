@@ -25,7 +25,7 @@ export default async function TextToSpeechPage() {
       showSidebar={true}
       historyItems={historyItems}
     >
-      <TextToSpeechEditor service="styletts2" credits={credits} />
+      <TextToSpeechEditor service="styletts2" credits={credits} userId={userId} />
     </PageLayout>
   );
 }
