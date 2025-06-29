@@ -52,6 +52,7 @@ export async function getHistoryItems(userId: string, service: ServiceType): Pro
       // Safely convert ObjectId to string
       const id = item._id instanceof ObjectId ? item._id.toHexString() : String(item._id);
       // Create a new object with the id field instead of _id
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, ...rest } = item;
       return {
         ...rest,
@@ -60,6 +61,7 @@ export async function getHistoryItems(userId: string, service: ServiceType): Pro
     });
   } catch (error) {
     console.error('Error fetching history items:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return [];
   }
 }

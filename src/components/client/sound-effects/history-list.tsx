@@ -95,7 +95,7 @@ export function HistoryList({ historyItems }: { historyItems: HistoryItem[] }) {
                                 onClick={() => {
                                   if (item.audioUrl) {
                                     playAudio({
-                                      id: item._id.toString(),
+                                      id: item.id,
                                       title: item.title,
                                       voice: item.voice ?? "",
                                       audioUrl: item.audioUrl as string,
