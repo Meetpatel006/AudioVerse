@@ -40,7 +40,7 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
   }, []);
 
   const handleSignOut = () => {
-    logout();
+    void logout();
     setShowAccountMenu(false);
   };
 

@@ -50,9 +50,10 @@ export default function SignUp() {
       await register(name, email, password);
       toast.success('Account created successfully!');
       router.push('/speech-synthesis/text-to-speech');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Sign up error:', error);
-      toast.error(error.message || 'Failed to create account');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

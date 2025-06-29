@@ -27,7 +27,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
       }
     };
 
-    checkAuth();
+    void checkAuth();
   }, [router, pathname]);
 
   // Show loading state while checking auth
