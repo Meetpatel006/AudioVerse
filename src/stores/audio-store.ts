@@ -46,51 +46,79 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   setProgress: (progress) => set({ progress }),
   setDuration: (duration) => set({ duration }),
 
-  playAudio: (audio) => {
+  playAudio: async (audio) => {
     const current = get().currentAudio;
 
-    const audioElement = audioManager.initialize();
-
+    // If clicking the same audio that's already playing, just toggle play/pause
     if (current && current.audioUrl === audio.audioUrl) {
       get().togglePlayPause();
       return;
     }
 
+    // Initialize audio manager
+    const audioElement = audioManager.initialize();
+    if (!audioElement) {
+      console.error('Audio element could not be initialized');
+      return;
+    }
+
+    // Set up error handling
+    audioManager.onError((error) => {
+      console.error('Audio error:', error);
+      set({ isPlaying: false });
+    });
+
+    // Update the UI to show loading state
     set({
       currentAudio: audio,
       isPlaybarOpen: true,
-      isPlaying: true,
+      isPlaying: false, // Start with false until audio is loaded
     });
 
-    if (audioElement) {
-      setTimeout(() => {
-        audioManager.setAudioSource(audio.audioUrl);
-        audioManager.play()?.catch((err) => {
-          console.error("Error playing audio: ", err);
-          set({ isPlaying: false });
-        });
-      }, 0);
+    try {
+      // Set the audio source and wait for it to load
+      await audioManager.setAudioSource(audio.audioUrl);
+      
+      // Start playback
+      await audioManager.play();
+      
+      // If we get here, playback started successfully
+      set({ isPlaying: true });
+
+    } catch (err) {
+      console.error('Failed to play audio:', err);
+      set({ isPlaying: false });
     }
   },
 
-  togglePlayPause: () => {
+  togglePlayPause: async () => {
     const isPlaying = get().isPlaying;
-    const audio = audioManager.getAudio();
+    const currentAudio = get().currentAudio;
+    
+    if (!currentAudio) return;
 
-    if (!audio || !get().currentAudio) return;
+    try {
+      if (isPlaying) {
+        audioManager.pause();
+        set({ isPlaying: false });
+      } else {
+        const audio = audioManager.getAudio();
+        if (!audio) {
+          console.error('Audio element not available');
+          return;
+        }
 
-    if (isPlaying) {
-      audioManager.pause();
-      set({ isPlaying: false });
-    } else {
-      if (!audio.src && get().currentAudio?.audioUrl) {
-        audioManager.setAudioSource(get().currentAudio!.audioUrl);
+        // If audio source is not set or different from current audio, update it
+        if (!audio.src || audio.src !== currentAudio.audioUrl) {
+          await audioManager.setAudioSource(currentAudio.audioUrl);
+        }
+
+        await audioManager.play();
+        set({ isPlaying: true });
       }
-
-      audioManager.play()?.catch((err) => {
-        console.error("Error playing audio: " + err);
-      });
-      set({ isPlaying: true });
+    } catch (err) {
+      console.error('Error toggling play/pause:', err);
+      set({ isPlaying: false });
     }
   },
 

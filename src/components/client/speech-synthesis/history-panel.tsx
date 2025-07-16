@@ -37,6 +37,8 @@ export function HistoryPanel({
     }
   };
 
+  console.log('HistoryPanel received historyItems:', historyItems);
+
   return (
     <div className="flex h-full w-full flex-col">
       <div className="w-full flex-shrink-0">
@@ -55,24 +57,21 @@ export function HistoryPanel({
         <div className="mt-2 flex h-[100vh] w-full flex-col overflow-y-auto">
           {/* Filter history items based on search */}
           {(() => {
+            const filteredItems = historyItems.filter((item) => {
+              const title = item.title || '';
+              const voiceName = voices.find((voice) => voice.id === item.voice)?.name || '';
+              
+              return title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                     voiceName.toLowerCase().includes(searchQuery.toLowerCase());
+            });
+
             const filteredGroups = Object.entries(
-              historyItems
-                .filter(
-                  (item) =>
-                    item.title
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase()) ||
-                    voices
-                      .find((voice) => voice.id === item.voice)
-                      ?.name.toLowerCase()
-                      .includes(searchQuery.toLowerCase()),
-                )
-                .reduce((groups: Record<string, typeof historyItems>, item) => {
-                  const date = item.date;
-                  groups[date] ??= [];
-                  groups[date].push(item);
-                  return groups;
-                }, {}),
+              filteredItems.reduce((groups: Record<string, typeof historyItems>, item) => {
+                const date = item.date || 'Unknown Date';
+                groups[date] ??= [];
+                groups[date].push(item);
+                return groups;
+              }, {})
             );
 
             // Show no results found when filtered results are empty

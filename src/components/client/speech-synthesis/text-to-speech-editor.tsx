@@ -10,7 +10,6 @@ import {
   IoLeafOutline,
   IoMegaphoneOutline,
   IoMicOutline,
-  IoChevronDownOutline,
 } from "react-icons/io5";
 import type { ServiceType } from "~/types/services";
 import { GenerateButton } from "../generate-button";
@@ -40,43 +39,10 @@ export function TextToSpeechEditor({
   );
   const [loading, setLoading] = useState(false);
   const [currentAudioId, setCurrentAudioId] = useState<string | null>(null);
-  const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
-  const [isVoiceDropdownOpen, setIsVoiceDropdownOpen] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState<Voice | null>(null);
 
   const getSelectedVoice = useVoiceStore((state) => state.getSelectedVoice);
   const selectVoice = useVoiceStore((state) => state.selectVoice);
   const { playAudio } = useAudioStore();
-
-  // Fetch available voices on component mount
-  useEffect(() => {
-    const fetchVoices = async () => {
-      try {
-        const voices = await getAvailableVoices();
-        setAvailableVoices(voices);
-        
-        // Set the first voice as default if none is selected
-        if (voices.length > 0 && !selectedVoice) {
-          const defaultVoice = voices[0];
-          if (defaultVoice) {
-            setSelectedVoice(defaultVoice);
-            selectVoice(service, defaultVoice.id);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching voices:", error);
-        toast.error("Failed to load voices");
-      }
-    };
-
-    fetchVoices();
-  }, [service, selectedVoice, selectVoice]);
-
-  const handleVoiceSelect = (voice: Voice) => {
-    setSelectedVoice(voice);
-    selectVoice(service, voice.id);
-    setIsVoiceDropdownOpen(false);
-  };
 
   useEffect(() => {
     if (!currentAudioId || !loading) return;
@@ -221,38 +187,6 @@ export function TextToSpeechEditor({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Voice selector */}
-      <div className="relative mb-4">
-        <button
-          type="button"
-          className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-left bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          onClick={() => setIsVoiceDropdownOpen(!isVoiceDropdownOpen)}
-          disabled={availableVoices.length === 0}
-        >
-          <span>{selectedVoice ? selectedVoice.name : 'Select a voice...'}</span>
-          <IoChevronDownOutline className="w-4 h-4 ml-2 text-gray-400" />
-        </button>
-
-        {isVoiceDropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-            <div className="py-1">
-              {availableVoices.map((voice) => (
-                <button
-                  key={voice.id}
-                  className={cn(
-                    'block w-full px-4 py-2 text-sm text-left hover:bg-gray-100',
-                    selectedVoice?.id === voice.id ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                  )}
-                  onClick={() => handleVoiceSelect(voice)}
-                >
-                  {voice.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Text area */}
       <div className="flex-grow">
         <textarea

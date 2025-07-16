@@ -17,8 +17,10 @@ export interface Voice {
 }
 
 export async function getAvailableVoices(service: string = 'styletts2'): Promise<Voice[]> {
+  console.log('getAvailableVoices called with service:', service);
+  
   if (service === 'seedvc') {
-    // Return the voices supported by Seed-VC
+    console.log('Returning Seed-VC voices');
     return [
       { id: 'male', name: 'Male' },
       { id: 'female', name: 'Female' },
@@ -28,33 +30,76 @@ export async function getAvailableVoices(service: string = 'styletts2'): Promise
   
   // Default to StyleTTS2 voices
   try {
+    console.log('Fetching voices from:', `${STYLETTS2_API_URL}/voices`);
+    
     const response = await fetch(`${STYLETTS2_API_URL}/voices`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`
-      }
+        'Authorization': API_KEY, // Modal expects just the key, not "Bearer " prefix
+        'Content-Type': 'application/json'
+      },
+      // Add timeout to prevent hanging
+      signal: AbortSignal.timeout(10000) // 10 second timeout
     });
 
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || 'Failed to fetch available voices');
+      let errorDetail = 'Failed to fetch available voices';
+      try {
+        const errorData = await response.json();
+        errorDetail = errorData.detail || JSON.stringify(errorData);
+        console.error('API Error:', errorData);
+      } catch (e) {
+        console.error('Failed to parse error response:', e);
+      }
+      throw new Error(errorDetail);
     }
 
     const data = await response.json();
+    console.log('Received voices data:', data);
     
-    // Map the API response to the Voice interface
-    // The API returns an object with voice IDs as keys and voice details as values
-    return Object.entries(data).map(([id, voiceDetails]) => ({
-      id,
-      name: String(voiceDetails).charAt(0).toUpperCase() + String(voiceDetails).slice(1), // Capitalize first letter
-      preview_url: undefined // The API doesn't provide preview URLs in the response
-    }));
+    // Handle different response formats
+    let voices: Voice[] = [];
+    
+    if (Array.isArray(data)) {
+      // If the API returns an array of voice objects
+      voices = data.map((item: any) => ({
+        id: item.id || String(Math.random()),
+        name: item.name || 'Unknown Voice',
+        preview_url: item.preview_url
+      }));
+    } else if (typeof data === 'object' && data !== null) {
+      // If the API returns an object with voice IDs as keys
+      voices = Object.entries(data).map(([id, voiceDetails]) => ({
+        id,
+        name: typeof voiceDetails === 'string' 
+          ? voiceDetails.charAt(0).toUpperCase() + voiceDetails.slice(1)
+          : 'Unknown Voice',
+        preview_url: undefined
+      }));
+    }
+    
+    // Ensure we always return at least some default voices
+    if (voices.length === 0) {
+      console.warn('No voices found in API response, using fallback voices');
+      voices = [
+        { id: 'man', name: 'Man' },
+        { id: 'woman', name: 'Woman' }
+      ];
+    }
+    
+    return voices;
+    
   } catch (error) {
-    console.error('Error fetching voices:', error);
+    console.error('Error in getAvailableVoices:', error);
+    
     // Return default voices if the API call fails
     return [
       { id: 'man', name: 'Man' },
-      { id: 'woman', name: 'Woman' }
+      { id: 'woman', name: 'Woman' },
+      { id: 'child', name: 'Child' },
+      { id: 'elderly', name: 'Elderly' }
     ];
   }
 }
@@ -65,7 +110,7 @@ export async function generateTextToSpeech(text: string, voice: string, userId: 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
+        'Authorization': API_KEY // Modal expects just the key, not "Bearer " prefix
       },
       body: JSON.stringify({
         text,
@@ -129,7 +174,7 @@ export async function generateSpeechToSpeech(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SEED_VC_API_KEY}`
+        'Authorization': SEED_VC_API_KEY // Modal expects just the key, not "Bearer " prefix
       },
       body: JSON.stringify({
         source_audio_key: sourceAudioKey,
@@ -189,7 +234,7 @@ export async function generateSoundEffect(prompt: string, userId: string): Promi
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MAKE_AUDIO_API_KEY}`
+        'Authorization': MAKE_AUDIO_API_KEY // Modal expects just the key, not "Bearer " prefix
       },
       body: JSON.stringify({
         prompt: prompt

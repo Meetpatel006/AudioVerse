@@ -11,10 +11,10 @@ declare global {
   var mongoose: CachedConnection;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI ?? 'mongodb+srv://meetpatel:meetpatel@elevenlabs-data.rb5uivt.mongodb.net/elevenlabs?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+  console.warn('MONGODB_URI not defined, history functionality will not work properly');
 }
 
 // Initialize the cached connection

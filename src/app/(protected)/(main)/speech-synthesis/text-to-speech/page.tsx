@@ -1,5 +1,5 @@
 import { PageLayout } from "~/components/client/page-layout";
-import { getHistoryItems } from "~/lib/history";
+import { getHistoryItems, type ClientHistoryItem } from "~/lib/history";
 import { TextToSpeechEditor } from "~/components/client/speech-synthesis/text-to-speech-editor";
 import { headers } from "next/headers";
 
@@ -14,7 +14,17 @@ export default async function TextToSpeechPage() {
     throw new Error('User not authenticated');
   }
   
-  const historyItems = await getHistoryItems(userId, service);
+  console.log('Fetching history for user:', userId, 'service:', service);
+  
+  let historyItems: ClientHistoryItem[] = [];
+  try {
+    historyItems = await getHistoryItems(userId, service);
+    console.log('Successfully fetched history items:', historyItems.length);
+  } catch (error) {
+    console.error('Error fetching history items:', error);
+    historyItems = []; // Fallback to empty array
+  }
+  
   // Set a default number of credits or implement your own logic
   const credits = 1000;
 
