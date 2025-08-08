@@ -58,15 +58,11 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     // Initialize audio manager
     const audioElement = audioManager.initialize();
     if (!audioElement) {
-      console.error('Audio element could not be initialized');
+      const error = new Error('Audio element could not be initialized');
+      console.error('Audio error:', error);
+      // You might want to show this error to the user via a toast or alert
       return;
     }
-
-    // Set up error handling
-    audioManager.onError((error) => {
-      console.error('Audio error:', error);
-      set({ isPlaying: false });
-    });
 
     // Update the UI to show loading state
     set({
@@ -75,19 +71,54 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       isPlaying: false, // Start with false until audio is loaded
     });
 
+    // Set up error handling
+    audioManager.onError((error) => {
+      console.error('Audio playback error:', error);
+      set({ isPlaying: false });
+      
+      // You might want to show this error to the user via a toast or alert
+      // For example: toast.error(`Playback failed: ${error.message}`);
+    });
+
     try {
+      console.log('Setting up audio source...');
       // Set the audio source and wait for it to load
       await audioManager.setAudioSource(audio.audioUrl);
       
+      // Set up event listeners for time updates to track progress
+      audioElement.ontimeupdate = () => {
+        if (audioElement.duration) {
+          const progress = (audioElement.currentTime / audioElement.duration) * 100;
+          set({ progress });
+          
+          // Format duration as MM:SS
+          const formatTime = (seconds: number) => {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+          };
+          
+          set({
+            duration: formatTime(audioElement.duration - audioElement.currentTime)
+          });
+        }
+      };
+      
+      console.log('Starting audio playback...');
       // Start playback
       await audioManager.play();
       
       // If we get here, playback started successfully
+      console.log('Audio playback started successfully');
       set({ isPlaying: true });
 
     } catch (err) {
-      console.error('Failed to play audio:', err);
+      const error = err instanceof Error ? err : new Error('Failed to play audio');
+      console.error('Failed to play audio:', error);
       set({ isPlaying: false });
+      
+      // You might want to show this error to the user via a toast or alert
+      // For example: toast.error(`Playback failed: ${error.message}`);
     }
   },
 

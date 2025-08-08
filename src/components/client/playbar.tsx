@@ -76,7 +76,8 @@ export default function Playbar() {
   };
 
   const getCurrentTimeFormatted = () => {
-    return formatTime(audioManager.getCurrentTime());
+    const currentTime = audioManager.getCurrentTime();
+    return currentTime !== null ? formatTime(currentTime) : '0:00';
   };
 
   return (

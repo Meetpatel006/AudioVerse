@@ -2,60 +2,164 @@ class AudioManager {
   private audioElement: HTMLAudioElement | null = null;
   private errorHandler: ((error: Error) => void) | null = null;
   private canPlayHandler: (() => void) | null = null;
+  private currentBlobUrl: string | null = null;
+
+  private getMimeType(extension: string): string {
+    const mimeTypes: Record<string, string> = {
+      mp3: 'audio/mpeg',
+      wav: 'audio/wav',
+      ogg: 'audio/ogg',
+      m4a: 'audio/mp4',
+      aac: 'audio/aac',
+      webm: 'audio/webm',
+      opus: 'audio/ogg; codecs=opus',
+      flac: 'audio/flac',
+      weba: 'audio/webm'
+    };
+    return mimeTypes[extension] || 'audio/mpeg';
+  }
 
   initialize(): HTMLAudioElement | null {
     if (this.audioElement) return this.audioElement;
-
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       this.audioElement = new Audio();
+      this.audioElement.preload = 'metadata';
       return this.audioElement;
     }
-
     return null;
   }
 
-  getAudio(): HTMLAudioElement | null {
-    return this.audioElement;
+  private revokeBlob() {
+    if (this.currentBlobUrl) {
+      URL.revokeObjectURL(this.currentBlobUrl);
+      this.currentBlobUrl = null;
+    }
   }
 
-  getCurrentTime(): number {
-    return this.audioElement?.currentTime ?? 0;
-  }
-
-  getDuration(): number {
-    return this.audioElement?.duration ?? 0;
-  }
-
-  getProgress(): number {
-    if (!this.audioElement?.duration) return 0;
-    return (this.audioElement.currentTime / this.audioElement.duration) * 100;
-  }
-
-  setAudioSource(url: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.audioElement) {
-        reject(new Error('Audio element not initialized'));
-        return;
+  /**
+   * Sets audio source, with Azure Blob SAS support
+   */
+  private stripSasToken(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname.includes('.blob.core.windows.net')) {
+        // Remove query parameters for Azure Blob URLs
+        return `${urlObj.origin}${urlObj.pathname}`;
       }
+      return url;
+    } catch (e) {
+      console.warn('Invalid URL, using as-is:', url);
+      return url;
+    }
+  }
 
-      // Clear previous event handlers
-      this.audioElement.onerror = null;
-      this.audioElement.oncanplay = null;
+  async setAudioSource(url: string): Promise<void> {
+    if (!this.audioElement) {
+      return Promise.reject(new Error('Audio element not initialized'));
+    }
+    if (!url) {
+      return Promise.reject(new Error('No audio URL provided'));
+    }
 
-      // Set up new handlers
-      this.audioElement.onerror = () => {
-        const error = new Error(`Failed to load audio from ${url}`);
-        this.errorHandler?.(error);
-        reject(error);
+    // Clean up the URL by removing SAS token if present
+    const cleanUrl = this.stripSasToken(url);
+    
+    // Always fetch SAS URLs to avoid MIME/type header issues
+    const isAzureBlob = cleanUrl.includes('.blob.core.windows.net');
+    if (isAzureBlob) {
+      console.log('Using clean Azure Blob URL for playback:', cleanUrl);
+      return this.fetchAndPlayBlob(cleanUrl);
+    }
+
+    // Otherwise try direct playback
+    return this.tryDirectPlay(url).catch(err => {
+      console.warn('Direct play failed, falling back to Blob method:', err);
+      return this.fetchAndPlayBlob(url);
+    });
+  }
+
+  /**
+   * Try playing directly
+   */
+  private tryDirectPlay(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.audioElement) return reject(new Error('No audio element'));
+      this.revokeBlob();
+      this.audioElement.src = url;
+
+      const cleanup = () => {
+        this.audioElement?.removeEventListener('canplay', onCanPlay);
+        this.audioElement?.removeEventListener('error', onError);
       };
 
-      this.audioElement.oncanplay = () => {
+      const onCanPlay = () => {
+        cleanup();
         this.canPlayHandler?.();
         resolve();
       };
 
-      // Set the source and start loading
-      this.audioElement.src = url;
+      const onError = () => {
+        cleanup();
+        reject(new Error('Audio format not supported by browser'));
+      };
+
+      this.audioElement.addEventListener('canplay', onCanPlay, { once: true });
+      this.audioElement.addEventListener('error', onError, { once: true });
+
+      this.audioElement.load();
+    });
+  }
+
+  /**
+   * Always fetch → Blob → Object URL → play
+   */
+  private async fetchAndPlayBlob(url: string): Promise<void> {
+    if (!this.audioElement) throw new Error('Audio element not initialized');
+
+    const extension = url.split('.').pop()?.split('?')[0].toLowerCase() || '';
+    const mimeType = this.getMimeType(extension);
+
+    const res = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include', // Include credentials if needed for authentication
+      headers: {
+        'Content-Type': 'application/octet-stream',
+      },
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => 'No error details');
+      throw new Error(`Failed to fetch audio: ${res.status} ${res.statusText}\n${errorText}`);
+    }
+
+    const blob = await res.blob();
+    const fixedBlob = blob.type ? blob : new Blob([blob], { type: mimeType });
+
+    this.revokeBlob();
+    this.currentBlobUrl = URL.createObjectURL(fixedBlob);
+    this.audioElement.src = this.currentBlobUrl;
+
+    return new Promise((resolve, reject) => {
+      const cleanup = () => {
+        this.audioElement?.removeEventListener('canplay', onCanPlay);
+        this.audioElement?.removeEventListener('error', onError);
+      };
+
+      const onCanPlay = () => {
+        cleanup();
+        this.canPlayHandler?.();
+        resolve();
+      };
+
+      const onError = () => {
+        cleanup();
+        reject(new Error('Failed to play fetched Blob audio'));
+      };
+
+      this.audioElement.addEventListener('canplay', onCanPlay, { once: true });
+      this.audioElement.addEventListener('error', onError, { once: true });
+
       this.audioElement.load();
     });
   }
@@ -69,10 +173,7 @@ class AudioManager {
   }
 
   async play(): Promise<void> {
-    if (!this.audioElement) {
-      throw new Error('Audio element not initialized');
-    }
-
+    if (!this.audioElement) throw new Error('Audio element not initialized');
     try {
       await this.audioElement.play();
     } catch (err) {
@@ -83,24 +184,32 @@ class AudioManager {
   }
 
   pause(): void {
-    return this.audioElement?.pause();
+    this.audioElement?.pause();
   }
 
-  skipForward(seconds = 10): void {
-    if (this.audioElement) {
-      this.audioElement.currentTime = Math.min(
-        this.audioElement.duration ?? 0,
-        this.audioElement.currentTime + seconds,
-      );
-    }
+  getCurrentTime(): number {
+    return this.audioElement ? this.audioElement.currentTime : 0;
   }
 
-  skipBackward(seconds = 10): void {
+  getAudio(): HTMLAudioElement | null {
+    return this.audioElement;
+  }
+
+  getProgress(): number {
+    if (!this.audioElement || !this.audioElement.duration) return 0;
+    return (this.audioElement.currentTime / this.audioElement.duration) * 100;
+  }
+
+  getDuration(): number {
+    return this.audioElement?.duration || 0;
+  }
+
+  dispose(): void {
+    this.pause();
+    this.revokeBlob();
     if (this.audioElement) {
-      this.audioElement.currentTime = Math.max(
-        0,
-        this.audioElement.currentTime - seconds,
-      );
+      this.audioElement.src = '';
+      this.audioElement = null;
     }
   }
 }
