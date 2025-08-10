@@ -96,7 +96,7 @@ function SignInContent() {
     <SignInPage
       title={
         <span className="font-light text-foreground tracking-tighter">
-          Welcome back to <span className="font-semibold">ElevenLabs</span>
+          Welcome back to <span className="font-semibold">AudioVerse</span>
         </span>
       }
       description="Sign in to your account to continue"
