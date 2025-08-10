@@ -46,4 +46,10 @@ yarn-error.log*
 .idea
 
 memory-bank/
-.vscode/
+.vscode
+.github
+.gemini
+.cursor
+.bmad-core
+.roomodes
+web-bundles
