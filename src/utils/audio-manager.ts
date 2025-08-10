@@ -196,7 +196,7 @@ class AudioManager {
   }
 
   getProgress(): number {
-    if (!this.audioElement || !this.audioElement.duration) return 0;
+    if (!this.audioElement?.duration) return 0;
     return (this.audioElement.currentTime / this.audioElement.duration) * 100;
   }
 

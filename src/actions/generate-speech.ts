@@ -16,7 +16,7 @@ export interface Voice {
   preview_url?: string;
 }
 
-export async function getAvailableVoices(service: string = 'styletts2'): Promise<Voice[]> {
+export async function getAvailableVoices(service = 'styletts2'): Promise<Voice[]> {
   console.log('getAvailableVoices called with service:', service);
   
   if (service === 'seedvc') {
@@ -163,7 +163,7 @@ export async function generateSpeechToSpeech(
   sourceAudioKey: string,
   targetVoice: string,
   userId: string,
-  fileName: string = "voice_changed_audio"
+  fileName = "voice_changed_audio"
 ) {
   try {
     // Generate a unique ID for this audio generation

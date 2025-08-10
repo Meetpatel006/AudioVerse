@@ -2,7 +2,7 @@
 
 'use client'
 
-import { SignUpPage, Testimonial } from "../../components/ui/sign-up";
+import { SignUpPage, type Testimonial } from "../../components/ui/sign-up";
 import { useRouter } from 'next/navigation';
 
 const sampleTestimonials: Testimonial[] = [
