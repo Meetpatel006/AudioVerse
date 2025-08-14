@@ -2,13 +2,12 @@
 
 import { useUIStore } from "~/stores/ui-store";
 import type { ServiceType } from "~/types/services";
-import { VoiceSelector } from "../creative-platform/voice-selector";
-import { HistoryPanel } from "../creative-platform/speech-synthesis/history-panel";
+import { HistoryPanel } from "./history-panel";
 import { useState } from "react";
 import type { ClientHistoryItem } from "~/lib/history";
 import { IoClose } from "react-icons/io5";
 
-export function SpeechSidebar({
+export function MelodySidebar({
   service,
   historyItems,
 }: {
@@ -32,12 +31,6 @@ export function SpeechSidebar({
         <div className="relative mb-6 flex">
           <div className="absolute bottom-0 left-0 right-0 border-b border-gray-200"></div>
           <button
-            onClick={() => setActiveTab("settings")}
-            className={`relative z-10 mr-4 pb-2 text-sm transition-colors duration-200 ${activeTab === "settings" ? "border-b-2 border-black text-black" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            Settings
-          </button>
-          <button
             onClick={() => setActiveTab("history")}
             className={`relative z-10 mr-4 pb-2 text-sm transition-colors duration-200 ${activeTab === "history" ? "border-b-2 border-black text-black" : "text-gray-500 hover:text-gray-700"}`}
           >
@@ -45,21 +38,14 @@ export function SpeechSidebar({
           </button>
         </div>
         <div className="transition-opacity duration-200">
-          {activeTab === "settings" ? (
-            <div className="mb-6">
-              <h2 className="mb-2 text-sm">Voice</h2>
-              <VoiceSelector service={service} />
-            </div>
-          ) : (
-            <HistoryPanel
-              service={service}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              hoveredItem={hoveredItem}
-              setHoveredItem={setHoveredItem}
-              historyItems={historyItems}
-            />
-          )}
+          <HistoryPanel
+            service={service}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            hoveredItem={hoveredItem}
+            setHoveredItem={setHoveredItem}
+            historyItems={historyItems}
+          />
         </div>
       </div>
 
@@ -85,12 +71,6 @@ export function SpeechSidebar({
           <div className="relative mb-6 flex">
             <div className="absolute bottom-0 left-0 right-0 border-b border-gray-200"></div>
             <button
-              onClick={() => setActiveTab("settings")}
-              className={`relative z-10 mr-4 pb-2 text-sm transition-colors duration-200 ${activeTab === "settings" ? "border-b-2 border-black text-black" : "text-gray-500 hover:text-gray-700"}`}
-            >
-              Settings
-            </button>
-            <button
               onClick={() => setActiveTab("history")}
               className={`relative z-10 mr-4 pb-2 text-sm transition-colors duration-200 ${activeTab === "history" ? "border-b-2 border-black text-black" : "text-gray-500 hover:text-gray-700"}`}
             >
@@ -100,21 +80,14 @@ export function SpeechSidebar({
 
           {/* Tab content */}
           <div className="transition-opacity duration-200">
-            {activeTab === "settings" ? (
-              <div className="mb-6">
-                <h2 className="mb-2 text-sm">Voice</h2>
-                <VoiceSelector service={service} />
-              </div>
-            ) : (
-              <HistoryPanel
-                service={service}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                hoveredItem={hoveredItem}
-                setHoveredItem={setHoveredItem}
-                historyItems={historyItems}
-              />
-            )}
+            <HistoryPanel
+              service={service}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              hoveredItem={hoveredItem}
+              setHoveredItem={setHoveredItem}
+              historyItems={historyItems}
+            />
           </div>
         </div>
       </div>

@@ -129,6 +129,14 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
           Home
         </SidebarButton>
         <SectionHeader isExpanded={isExpanded}>Playground</SectionHeader>
+        <SidebarButton
+          icon={<SquareActivity className="h-5 w-5" />}
+          isExpanded={isExpanded}
+          isActive={pathname === "/music-platform/melody-maker"}
+          href="/music-platform/melody-maker"
+        >
+          Melody Maker
+        </SidebarButton>
       </nav>
 
       {/* Bottom Section */}
