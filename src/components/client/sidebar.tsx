@@ -112,8 +112,8 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
         <SidebarButton
           icon={<IoHomeOutline />}
           isExpanded={isExpanded}
-          isActive={pathname === "/home"}
-          href="/home"
+          isActive={pathname === "/creative-platform/home"}
+          href="/creative-platform/home"
         >
           Home
         </SidebarButton>
@@ -121,24 +121,24 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
         <SidebarButton
           icon={<IoChatboxOutline />}
           isExpanded={isExpanded}
-          isActive={pathname.startsWith("/speech-synthesis/text-to-speech")}
-          href="/speech-synthesis/text-to-speech"
+          isActive={pathname.startsWith("/creative-platform/speech-synthesis/text-to-speech")}
+          href="/creative-platform/speech-synthesis/text-to-speech"
         >
           Text to Speech
         </SidebarButton>
         <SidebarButton
           icon={<IoMicOutline />}
           isExpanded={isExpanded}
-          isActive={pathname.startsWith("/speech-synthesis/speech-to-speech")}
-          href="/speech-synthesis/speech-to-speech"
+          isActive={pathname.startsWith("/creative-platform/speech-synthesis/speech-to-speech")}
+          href="/creative-platform/speech-synthesis/speech-to-speech"
         >
           Voice Changer
         </SidebarButton>
         <SidebarButton
           icon={<IoMusicalNotesOutline />}
           isExpanded={isExpanded}
-          isActive={pathname.startsWith("/sound-effects")}
-          href="/sound-effects/generate"
+          isActive={pathname.startsWith("/creative-platform/sound-effects")}
+          href="/creative-platform/sound-effects/generate"
         >
           Sound Effects
         </SidebarButton>

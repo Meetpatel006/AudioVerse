@@ -15,6 +15,7 @@ const protectedRoutes = [
   '/(protected)', // All routes under /(protected) are protected
   '/sound-effects',
   '/speech-synthesis',
+  '/creative-platform',
 ];
 
 export async function middleware(request: NextRequest) {

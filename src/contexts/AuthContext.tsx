@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (from && from !== '/sign-in' && from !== '/sign-up') {
               window.location.href = from;
             } else {
-              window.location.href = '/speech-synthesis/text-to-speech';
+              window.location.href = '/creative-platform/home';
             }
           }
         } else {
@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const from = url.searchParams.get('from');
       
       // Use window.location.href for immediate navigation
-      window.location.href = from ?? '/speech-synthesis/text-to-speech';
+      window.location.href = from ?? '/creative-platform/home';
       
       // Fix unsafe return by adding type assertion
       return;

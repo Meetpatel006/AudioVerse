@@ -38,7 +38,7 @@ function SignInContent() {
 
   useEffect(() => {
     // Check for redirect URL in query params
-    const redirectUrl = searchParams.get('from') ?? '/speech-synthesis/text-to-speech';
+    const redirectUrl = searchParams.get('from') ?? '/creative-platform/home';
     
     // If user is already logged in, redirect them
     const checkAuth = async () => {
@@ -67,7 +67,7 @@ function SignInContent() {
       toast.success('Signed in successfully!');
       
       // Redirect to the original URL or dashboard
-      const redirectUrl = searchParams.get('from') ?? '/speech-synthesis/text-to-speech';
+      const redirectUrl = searchParams.get('from') ?? '/creative-platform/home';
       router.push(redirectUrl);
     } catch (error) {
       console.error('Sign in error:', error);

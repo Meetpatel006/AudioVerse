@@ -7,11 +7,11 @@ export default async function SoundEffectsHistoryPage() {
   const soundEffectsTabs = [
     {
       name: "Generate",
-      path: "/sound-effects/generate",
+      path: "/creative-platform/sound-effects/generate",
     },
     {
       name: "History",
-      path: "/sound-effects/history",
+      path: "/creative-platform/sound-effects/history",
     },
   ];
 

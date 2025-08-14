@@ -10,9 +10,11 @@ import { InstantSpeechIcon } from '~/components/ui/instant-speech-icon';
 import { MessageSquare, Mic, Music, Clapperboard, Bot, Film } from 'lucide-react';
 import { PageLayout } from "~/components/client/page-layout";
 import { useAuth } from '~/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 const HomePage = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
@@ -24,6 +26,22 @@ const HomePage = () => {
     };
     setGreeting(getGreeting());
   }, []);
+
+  // Redirect to sign-in if user is not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/sign-in');
+    }
+  }, [user, loading, router]);
+
+  // Show loading state while checking auth
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <PageLayout title="Home" service="styletts2" showSidebar={false}>
