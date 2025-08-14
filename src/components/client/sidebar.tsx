@@ -1,9 +1,14 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { DropdownMenu } from "~/components/ui/dropdown-menu";
+import { Pencil, Trash, Copy, SquareActivity, ChevronsUpDown } from "lucide-react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
+  IoHomeOutline,
   IoChatboxOutline,
   IoMicOutline,
   IoMusicalNotesOutline,
@@ -77,6 +82,35 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
 
       {/* Navigation */}
       <nav className="mt-8 flex flex-1 flex-col">
+        <div className="mb-4">
+          {isExpanded && (
+            <DropdownMenu
+              options={[
+                {
+                  label: "Creative Platform",
+                  onClick: () => console.log("Creative Platform"),
+                },
+                {
+                  label: "AI Music Platform",
+                  onClick: () => console.log("AI Music Platform"),
+                },
+              ]}
+            >
+              <div className="flex items-center">
+                <SquareActivity className="h-5 w-5 mr-2" />
+                Creative Platform
+              </div>
+            </DropdownMenu>
+          )}
+        </div>
+        <SidebarButton
+          icon={<IoHomeOutline />}
+          isExpanded={isExpanded}
+          isActive={pathname === "/home"}
+          href="/home"
+        >
+          Home
+        </SidebarButton>
         <SectionHeader isExpanded={isExpanded}>Playground</SectionHeader>
         <SidebarButton
           icon={<IoChatboxOutline />}
