@@ -47,7 +47,12 @@ const HomePage = () => {
       <div className="min-h-screen bg-gray-50/50 p-8">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">My Workspace</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-gray-500">My Workspace</p>
+              <span className="rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-800">
+                AI Music Platform
+              </span>
+            </div>
             <h1 className="text-3xl font-bold text-gray-800">
               {greeting}, {user?.name || 'Guest'}
             </h1>
@@ -94,21 +99,26 @@ const HomePage = () => {
               <Button variant="outline" className="mt-6">Explore Library</Button>
             </div>
 
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800">Create or clone a voice</h2>
-              <div className="mt-4 space-y-4">
-                <ActionCard
-                  title="Voice Design"
-                  description="Design an entirely new voice from a text prompt"
-                />
-                <ActionCard
-                  title="Clone your Voice"
-                  description="Create a realistic digital clone of your voice"
-                />
-                <ActionCard
-                  title="Voice Collections"
-                  description="Curated AI voices for every use case"
-                />
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Create or clone a voice</h2>
+                <div className="mt-4 space-y-4">
+                  <ActionCard
+                    title="Voice Design"
+                    description="Design an entirely new voice from a text prompt"
+                    badge="MUSIC"
+                  />
+                  <ActionCard
+                    title="Clone your Voice"
+                    description="Create a realistic digital clone of your voice"
+                    badge="CLONE"
+                  />
+                  <ActionCard
+                    title="Voice Collections"
+                    description="Curated AI voices for every use case"
+                    badge="COLLECTION"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -121,8 +131,8 @@ const HomePage = () => {
 export default HomePage;
 
 const FeatureCard = ({ icon, title }: { icon: React.ReactNode, title: string }) => (
-  <Card className="flex flex-col items-center justify-center p-6 text-center">
-    <div className="mb-4 text-gray-600">{icon}</div>
+  <Card className="flex flex-col items-center justify-center p-6 text-center hover:shadow-md transition-shadow">
+    <div className="mb-4 text-purple-600">{icon}</div>
     <p className="font-semibold text-gray-800">{title}</p>
   </Card>
 );
@@ -140,10 +150,17 @@ const LibraryItem = ({ name, description, avatar }: { name: string, description:
   </div>
 );
 
-const ActionCard = ({ title, description }: { title: string, description: string }) => (
+const ActionCard = ({ title, description, badge }: { title: string, description: string, badge?: string }) => (
   <Card>
     <CardHeader>
-      <CardTitle>{title}</CardTitle>
+      <div className="flex items-start justify-between">
+        <CardTitle>{title}</CardTitle>
+        {badge && (
+          <span className="rounded-full bg-purple-100 px-2 py-1 text-xs font-medium text-purple-800">
+            {badge}
+          </span>
+        )}
+      </div>
     </CardHeader>
     <CardContent>
       <p className="text-sm text-gray-500">{description}</p>
