@@ -49,6 +49,7 @@ memory-bank/
 .vscode
 .github
 .gemini
+.qwen
 .cursor
 .bmad-core
 .roomodes
