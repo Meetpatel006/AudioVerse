@@ -7,8 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { SoundEffectIcon } from '~/components/ui/sound-effect-icon';
 import { MusicIcon } from '~/components/ui/music-icon';
 import { InstantSpeechIcon } from '~/components/ui/instant-speech-icon';
-import { MessageSquare, Mic, Music, Clapperboard, Bot, Film } from 'lucide-react';
-import { PageLayout } from "~/components/client/page-layout";
+import { PageLayout } from "~/components/client/creative-platform/page-layout";
 import { useAuth } from '~/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
@@ -58,11 +57,8 @@ const HomePage = () => {
         <main className="mt-8">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-6">
             <FeatureCard icon={<InstantSpeechIcon />} title="Instant speech" />
-            {/* <FeatureCard icon={<Bot />} title="Audiobook" /> */}
-            {/* <FeatureCard icon={<Mic />} title="Conversational AI" /> */}
             <FeatureCard icon={<MusicIcon />} title="Music" />
             <FeatureCard icon={<SoundEffectIcon />} title="Sound effect" />
-            {/* <FeatureCard icon={<Clapperboard />} title="Dubbed video" /> */}
           </div>
 
           <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-3">

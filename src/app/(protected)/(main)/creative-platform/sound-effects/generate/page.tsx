@@ -1,5 +1,5 @@
-import { PageLayout } from "~/components/client/page-layout";
-import { SoundEffectsGenerator } from "~/components/client/sound-effects/sound-effects-generator";
+import { PageLayout } from "~/components/client/creative-platform/page-layout";
+import { SoundEffectsGenerator } from "~/components/client/creative-platform/sound-effects/sound-effects-generator";
 import { headers } from 'next/headers';
 
 export default async function SoundEffectsGeneratePage() {

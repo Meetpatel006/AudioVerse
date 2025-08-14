@@ -10,7 +10,7 @@ import {
   getAvailableVoices,
   type Voice,
 } from "~/actions/generate-speech";
-import { GenerateButton } from "~/components/client/generate-button";
+import { GenerateButton } from "~/components/client/creative-platform/generate-button";
 import { useAudioStore } from "~/stores/audio-store";
 import { useVoiceStore } from "~/stores/voice-store";
 import type { ServiceType } from "~/types/services";

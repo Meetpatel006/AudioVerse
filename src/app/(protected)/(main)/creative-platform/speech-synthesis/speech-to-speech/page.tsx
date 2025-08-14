@@ -1,5 +1,5 @@
-import { PageLayout } from "~/components/client/page-layout";
-import { VoiceChanger } from "~/components/client/speech-synthesis/voice-changer";
+import { PageLayout } from "~/components/client/creative-platform/page-layout";
+import { VoiceChanger } from "~/components/client/creative-platform/speech-synthesis/voice-changer";
 import { getHistoryItems } from "~/lib/history";
 import { headers } from "next/headers";
 

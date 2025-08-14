@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { DropdownMenu } from "~/components/ui/dropdown-menu";
-import { Pencil, Trash, Copy, SquareActivity, ChevronsUpDown } from "lucide-react";
+import { SquareActivity } from "lucide-react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";

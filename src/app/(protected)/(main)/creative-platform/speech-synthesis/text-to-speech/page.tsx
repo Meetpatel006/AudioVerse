@@ -1,6 +1,6 @@
-import { PageLayout } from "~/components/client/page-layout";
+import { PageLayout } from "~/components/client/creative-platform/page-layout";
 import { getHistoryItems, type ClientHistoryItem } from "~/lib/history";
-import { TextToSpeechEditor } from "~/components/client/speech-synthesis/text-to-speech-editor";
+import { TextToSpeechEditor } from "~/components/client/creative-platform/speech-synthesis/text-to-speech-editor";
 import { headers } from "next/headers";
 
 export default async function TextToSpeechPage() {
