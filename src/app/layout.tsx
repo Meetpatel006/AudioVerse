@@ -6,9 +6,9 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "~/contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: "TwelveLabs",
-  description: "TwelveLabs",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  title: "AudioVerse",
+  description: "AudioVerse",
+  icons: [{ rel: "icon", url: "/logo.png" }],
 };
 
 const inter = Inter({

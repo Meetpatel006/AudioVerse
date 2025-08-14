@@ -24,6 +24,10 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
   const [isHovered, setIsHovered] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const [selectedOption, setSelectedOption] = useState({
+    label: "Creative Platform",
+    Icon: <SquareActivity className="h-5 w-5 mr-2" />,
+  });
 
   const isExpanded = isMobile || isPinned || isHovered;
 
@@ -57,7 +61,7 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
     >
       <div className="flex items-center justify-between">
         <h1 className={`text-xl font-bold ${!isExpanded && "hidden"}`}>
-          12TwelveLabs
+          AudioVerce
         </h1>
         {!isMobile && (
           <button
@@ -88,17 +92,19 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
               options={[
                 {
                   label: "Creative Platform",
-                  onClick: () => console.log("Creative Platform"),
+                  onClick: () => setSelectedOption({ label: "Creative Platform", Icon: <SquareActivity className="h-5 w-5 mr-2" /> }),
+                  Icon: <SquareActivity className="h-5 w-5 mr-2" />
                 },
                 {
                   label: "AI Music Platform",
-                  onClick: () => console.log("AI Music Platform"),
+                  onClick: () => setSelectedOption({ label: "AI Music Platform", Icon: <SquareActivity className="h-5 w-5 mr-2" /> }),
+                  Icon: <SquareActivity className="h-5 w-5 mr-2" />
                 },
-              ]}
+              ].filter((option) => option.label !== selectedOption.label)}
             >
               <div className="flex items-center">
-                <SquareActivity className="h-5 w-5 mr-2" />
-                Creative Platform
+                {selectedOption.Icon}
+                {isExpanded && selectedOption.label}
               </div>
             </DropdownMenu>
           )}
