@@ -4,7 +4,7 @@ import { DropdownMenu } from "~/components/ui/dropdown-menu";
 import { SquareActivity } from "lucide-react";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   IoHomeOutline,
@@ -15,14 +15,23 @@ import { useAuth } from "~/contexts/AuthContext";
 
 export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { logout } = useAuth();
   const [isPinned, setIsPinned] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
-  const [selectedOption, setSelectedOption] = useState({
-    label: "Creative Platform",
-    Icon: <SquareActivity className="h-5 w-5 mr-2" />,
+  const [selectedOption, setSelectedOption] = useState(() => {
+    if (pathname?.startsWith("/music-platform")) {
+      return {
+        label: "AI Music Platform",
+        Icon: <SquareActivity className="h-5 w-5 mr-2" />,
+      };
+    }
+    return {
+      label: "Creative Platform",
+      Icon: <SquareActivity className="h-5 w-5 mr-2" />,
+    };
   });
 
   const isExpanded = isMobile || isPinned || isHovered;
@@ -90,7 +99,7 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
                   label: "Creative Platform",
                   onClick: () => {
                     setSelectedOption({ label: "Creative Platform", Icon: <SquareActivity className="h-5 w-5 mr-2" /> });
-                    window.location.href = "/creative-platform/home";
+                    router.push("/creative-platform/home");
                   },
                   Icon: <SquareActivity className="h-5 w-5 mr-2" />
                 },
@@ -98,7 +107,7 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
                   label: "AI Music Platform",
                   onClick: () => {
                     setSelectedOption({ label: "AI Music Platform", Icon: <SquareActivity className="h-5 w-5 mr-2" /> });
-                    window.location.href = "/music-platform/home";
+                    router.push("/music-platform/home");
                   },
                   Icon: <SquareActivity className="h-5 w-5 mr-2" />
                 },
