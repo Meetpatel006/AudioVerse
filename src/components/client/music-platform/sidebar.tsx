@@ -8,9 +8,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   IoHomeOutline,
-  IoChatboxOutline,
-  IoMicOutline,
-  IoMusicalNotesOutline,
   IoPersonOutline,
   IoPinOutline,
 } from "react-icons/io5";
@@ -105,7 +102,7 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
                   },
                   Icon: <SquareActivity className="h-5 w-5 mr-2" />
                 },
-              ].filter((option) => option.label !== selectedOption.label)}
+              ]}
             >
               <div className="flex items-center">
                 {selectedOption.Icon}
@@ -117,36 +114,12 @@ export default function Sidebar({ isMobile = false }: { isMobile?: boolean }) {
         <SidebarButton
           icon={<IoHomeOutline />}
           isExpanded={isExpanded}
-          isActive={pathname === "/creative-platform/home"}
-          href="/creative-platform/home"
+          isActive={pathname === "/music-platform/home"}
+          href="/music-platform/home"
         >
           Home
         </SidebarButton>
         <SectionHeader isExpanded={isExpanded}>Playground</SectionHeader>
-        <SidebarButton
-          icon={<IoChatboxOutline />}
-          isExpanded={isExpanded}
-          isActive={pathname.startsWith("/creative-platform/speech-synthesis/text-to-speech")}
-          href="/creative-platform/speech-synthesis/text-to-speech"
-        >
-          Text to Speech
-        </SidebarButton>
-        <SidebarButton
-          icon={<IoMicOutline />}
-          isExpanded={isExpanded}
-          isActive={pathname.startsWith("/creative-platform/speech-synthesis/speech-to-speech")}
-          href="/creative-platform/speech-synthesis/speech-to-speech"
-        >
-          Voice Changer
-        </SidebarButton>
-        <SidebarButton
-          icon={<IoMusicalNotesOutline />}
-          isExpanded={isExpanded}
-          isActive={pathname.startsWith("/creative-platform/sound-effects")}
-          href="/creative-platform/sound-effects/generate"
-        >
-          Sound Effects
-        </SidebarButton>
       </nav>
 
       {/* Bottom Section */}
