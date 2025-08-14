@@ -1,7 +1,7 @@
 "use server";
 
 import { getUploadUrl } from "~/lib/azure-storage";
-import { addHistoryItem } from "~/lib/history";
+import { addHistoryItem } from "~/lib/history-server";
 import { getMongoClient } from "~/lib/mongodb";
 import { ObjectId } from 'mongodb';
 

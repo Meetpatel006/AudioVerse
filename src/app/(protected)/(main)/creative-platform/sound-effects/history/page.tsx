@@ -1,6 +1,6 @@
 import { PageLayout } from "~/components/client/creative-platform/page-layout";
 import { HistoryList } from "~/components/client/creative-platform/sound-effects/history-list";
-import { getHistoryItems } from "~/lib/history";
+import { getHistoryItems } from "~/lib/history-server";
 import { headers } from 'next/headers';
 
 export default async function SoundEffectsHistoryPage() {

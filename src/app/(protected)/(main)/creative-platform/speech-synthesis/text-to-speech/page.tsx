@@ -1,5 +1,5 @@
 import { PageLayout } from "~/components/client/creative-platform/page-layout";
-import { getHistoryItems, type ClientHistoryItem } from "~/lib/history";
+import { getHistoryItems, type ClientHistoryItem } from "~/lib/history-server";
 import { TextToSpeechEditor } from "~/components/client/creative-platform/speech-synthesis/text-to-speech-editor";
 import { headers } from "next/headers";
 

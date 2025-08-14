@@ -1,6 +1,6 @@
 import { PageLayout } from "~/components/client/creative-platform/page-layout";
 import { VoiceChanger } from "~/components/client/creative-platform/speech-synthesis/voice-changer";
-import { getHistoryItems } from "~/lib/history";
+import { getHistoryItems } from "~/lib/history-server";
 import { headers } from "next/headers";
 
 export default async function SpeechToSpeechPage() {

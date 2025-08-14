@@ -126,7 +126,7 @@ function HistoryItem({
   onPlay: (item: HistoryItemType) => void;
 }) {
   const voiceUsed =
-    voices.find((voice) => voice.id === item.voice) ?? voices[0]!;
+    voices.find((voice) => voice.id === item.voice) || voices[0] || null;
 
   return (
     <div
@@ -153,13 +153,17 @@ function HistoryItem({
         </div>
 
         <div className="flex items-center space-x-1">
-          <div
-            className="flex h-3 w-3 items-center justify-center rounded-full text-xs text-white"
-            style={{ background: voiceUsed.gradientColors }}
-          ></div>
-          <span className="text-xs font-light text-gray-500">
-            {voiceUsed.name}
-          </span>
+          {voiceUsed && (
+            <>
+              <div
+                className="flex h-3 w-3 items-center justify-center rounded-full text-xs text-white"
+                style={{ background: voiceUsed.gradientColors }}
+              ></div>
+              <span className="text-xs font-light text-gray-500">
+                {voiceUsed.name}
+              </span>
+            </>
+          )}
           <span className="text-xs font-light text-gray-500">·</span>
           <span className="text-xs font-light text-gray-500">
             {item.time ?? "now"}
