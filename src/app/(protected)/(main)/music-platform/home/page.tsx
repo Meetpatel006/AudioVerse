@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { SoundEffectIcon } from '~/components/ui/sound-effect-icon';
 import { MusicIcon } from '~/components/ui/music-icon';
 import { InstantSpeechIcon } from '~/components/ui/instant-speech-icon';
-import { PageLayout } from "~/components/client/music-platform/page-layout";
+import { PageLayout } from "~/components/client/music-platform/melody-maker/page-layout";
 import { useAuth } from '~/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 

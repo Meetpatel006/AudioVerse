@@ -2,7 +2,7 @@
 
 import { useUIStore } from "~/stores/ui-store";
 import type { ServiceType } from "~/types/services";
-import { HistoryPanel } from "./history-panel";
+import { HistoryPanel } from "../history-panel";
 import { useState } from "react";
 import type { ClientHistoryItem } from "~/lib/history";
 import { IoClose } from "react-icons/io5";

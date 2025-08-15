@@ -2,16 +2,16 @@
 
 import { useEffect, type ReactNode } from "react";
 import type { ServiceType } from "~/types/services";
-import Sidebar from "./sidebar";
+import Sidebar from "../sidebar";
 import { useUIStore } from "~/stores/ui-store";
 import { IoClose, IoMenu } from "react-icons/io5";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MelodySidebar } from "./melody-maker/right-sidebar";
+import { MelodySidebar } from "./right-sidebar";
 import type { ClientHistoryItem } from "~/lib/history";
-import Playbar from "./playbar";
+import Playbar from "../playbar";
 import { useAudioStore } from "~/stores/audio-store";
-import { MobileSettingsButton } from "./melody-maker/mobile-settings-button";
+import { MobileSettingsButton } from "../mobile-settings-button";
 
 interface TabItem {
   name: string;

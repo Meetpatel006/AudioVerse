@@ -1,4 +1,4 @@
-import { PageLayout } from "~/components/client/music-platform/page-layout";
+import { PageLayout } from "~/components/client/music-platform/melody-maker/page-layout";
 import { MelodyMakerEditor } from "~/components/client/music-platform/melody-maker/melody-maker-editor";
 import { getHistoryItems } from "~/lib/history-server";
 import { revalidatePath } from "next/cache";
