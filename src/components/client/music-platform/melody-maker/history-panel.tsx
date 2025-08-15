@@ -30,7 +30,7 @@ export function HistoryPanel({
       playAudio({
         id: item.id.toString(),
         title: item.title,
-        voice: item.voice,
+        voice: item.voice ?? null,
         audioUrl: item.audioUrl,
         service: item.service,
       });
@@ -59,7 +59,7 @@ export function HistoryPanel({
           {(() => {
             const filteredItems = historyItems.filter((item) => {
               const title = item.title || '';
-              const voiceName = voices.find((voice) => voice.id === item.voice)?.name || '';
+              const voiceName = item.voice ? voices.find((voice) => voice.id === item.voice)?.name || '' : '';
               
               return title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                      voiceName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -126,7 +126,18 @@ function HistoryItem({
   onPlay: (item: HistoryItemType) => void;
 }) {
   const voiceUsed =
-    voices.find((voice) => voice.id === item.voice) || voices[0] || null;
+    item.voice ? voices.find((voice) => voice.id === item.voice) || null : null;
+
+  const handleDownload = () => {
+    if (!item.audioUrl) return;
+    
+    const link = document.createElement("a");
+    link.href = item.audioUrl;
+    link.download = `${item.title ?? "melody"}.wav`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div
@@ -145,7 +156,10 @@ function HistoryItem({
               >
                 <IoPlay className="h-5 w-5" />
               </button>
-              <button className="rounded-full p-1 hover:bg-gray-200">
+              <button 
+                onClick={handleDownload}
+                className="rounded-full p-1 hover:bg-gray-200"
+              >
                 <IoDownloadOutline className="h-5 w-5" />
               </button>
             </div>
@@ -164,7 +178,7 @@ function HistoryItem({
               </span>
             </>
           )}
-          <span className="text-xs font-light text-gray-500">·</span>
+          {voiceUsed && <span className="text-xs font-light text-gray-500">·</span>}
           <span className="text-xs font-light text-gray-500">
             {item.time ?? "now"}
           </span>

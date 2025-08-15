@@ -114,29 +114,29 @@ export default function Playbar() {
             {/* Left section */}
             <div className="flex items-center px-4">
               <div className="flex flex-col gap-1">
-                <p className="max-w-xs truncate text-sm">
-                  {currentAudio?.title}
-                </p>
-                <div className="flex items-center text-xs text-gray-400">
-                  {voice && (
-                    <>
-                      <div className="flex items-center">
-                        <div
-                          className="mr-1 flex h-3 w-3 items-center justify-center rounded-full text-white"
-                          style={{ background: voice.gradientColors }}
-                        />
-                        <span>{voice.name}</span>
-                        <span className="mx-1">·</span>
-                      </div>
-                    </>
-                  )}
+              <p className="max-w-xs truncate text-sm">
+                {currentAudio?.title}
+              </p>
+              <div className="flex items-center text-xs text-gray-400">
+                {voice && (
+                  <>
+                    <div className="flex items-center">
+                      <div
+                        className="mr-1 flex h-3 w-3 items-center justify-center rounded-full text-white"
+                        style={{ background: voice.gradientColors }}
+                      />
+                      <span>{voice.name}</span>
+                      <span className="mx-1">·</span>
+                    </div>
+                  </>
+                )}
 
-                  <div className="flex items-center">
-                    <IoTimeOutline className="mr-1 h-3 w-3" />
-                    <span>{currentAudio?.createdAt ?? "Just now"}</span>
-                  </div>
+                <div className="flex items-center">
+                  <IoTimeOutline className="mr-1 h-3 w-3" />
+                  <span>{currentAudio?.createdAt ?? "Just now"}</span>
                 </div>
               </div>
+            </div>
             </div>
 
             {/* Center section */}
@@ -214,7 +214,7 @@ export default function Playbar() {
                         />
                         <span>{voice.name}</span>
                         <span className="mx-1">·</span>
-                      </div>
+                    </div>
                     </>
                   )}
                   <div className="flex items-center">

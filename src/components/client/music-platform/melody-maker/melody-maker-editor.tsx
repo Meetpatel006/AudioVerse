@@ -49,7 +49,7 @@ export function MelodyMakerEditor({
             id: currentAudioId,
             title: `${prompt.substring(0, 50)}${prompt.length > 50 ? "..." : ""}`,
             audioUrl: status.audioUrl,
-            voice: "", // Not applicable for melody maker
+            voice: null, // Not applicable for melody maker
             duration: `${duration}:00`,
             progress: 0,
             service: service,
@@ -126,7 +126,7 @@ export function MelodyMakerEditor({
           id: audioId,
           title: `${prompt.substring(0, 50)}${prompt.length > 50 ? "..." : ""}`,
           audioUrl: audioUrl,
-          voice: "", // Not applicable for melody maker
+          voice: null, // Not applicable for melody maker
           duration: `${duration}:00`,
           progress: 0,
           service: "melody-maker",
