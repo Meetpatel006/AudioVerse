@@ -11,10 +11,12 @@ export function MelodyMakerEditor({
   service,
   credits,
   userId,
+  onHistoryUpdate,
 }: {
   service: ServiceType;
   credits: number;
   userId: string;
+  onHistoryUpdate?: () => void;
 }) {
   // Form state
   const [prompt, setPrompt] = useState("");
@@ -58,6 +60,11 @@ export function MelodyMakerEditor({
 
           playAudio(newAudio);
           setCurrentAudioId(null);
+          
+          // Update history
+          if (onHistoryUpdate) {
+            onHistoryUpdate();
+          }
         } else if (!status.success) {
           clearInterval(pollInterval);
           setLoading(false);
@@ -92,7 +99,7 @@ export function MelodyMakerEditor({
         clearInterval(pollInterval);
       }
     };
-  }, [currentAudioId, loading, playAudio, prompt, duration, service]);
+  }, [currentAudioId, loading, playAudio, prompt, duration, service, onHistoryUpdate]);
 
   const handleGenerateMelody = async (): Promise<void> => {
     if (prompt.trim().length === 0) {
@@ -134,6 +141,11 @@ export function MelodyMakerEditor({
         };
         playAudio(newAudio);
         setLoading(false);
+        
+        // Update history
+        if (onHistoryUpdate) {
+          onHistoryUpdate();
+        }
       } else {
         // If we need to poll for the audio, set up the polling
         setCurrentAudioId(audioId);
@@ -315,30 +327,6 @@ export function MelodyMakerEditor({
             Enable regularization to control output smoothness
           </p>
         )}
-
-        <div className="mb-6">
-          <label className="text-sm font-medium text-gray-700">
-            Advanced Settings
-          </label>
-          <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-xs font-medium text-gray-700">Solver</p>
-                <p className="text-xs text-gray-500">{solver}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-700">Model Name</p>
-                <p className="text-xs text-gray-500">
-                  facebook/melodyflow-t24-30secs
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-700">Variations</p>
-                <p className="text-xs text-gray-500">1</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Generate button */}
