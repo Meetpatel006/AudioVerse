@@ -1,4 +1,4 @@
-import { PageLayout } from "~/components/client/music-platform/melody-maker/page-layout";
+import { PageLayout } from "~/components/client/music-platform/lyrics-to-music/page-layout";
 
 export default function LyricsToMusicPage() {
   return (

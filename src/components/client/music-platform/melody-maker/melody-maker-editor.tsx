@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ServiceType } from "~/types/services";
-import { GenerateButton } from "~/components/client/creative-platform/generate-button";
+import { GenerateButton } from "../generate-button";
 import { useAudioStore } from "~/stores/audio-store";
 import toast from "react-hot-toast";
 import { generateMelody, generationStatus } from "~/actions/generate-melody";
