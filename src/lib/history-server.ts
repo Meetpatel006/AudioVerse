@@ -26,8 +26,10 @@ type NewHistoryItem = Omit<HistoryItem, '_id' | 'createdAt' | 'updatedAt'> & {
 };
 
 // Type for the client-side representation
-export type ClientHistoryItem = Omit<HistoryItem, '_id'> & {
+export type ClientHistoryItem = Omit<HistoryItem, '_id' | 'createdAt' | 'updatedAt'> & {
   id: string;
+  createdAt: string;
+  updatedAt: string;
   _id?: never; // Ensure _id is not present in the client-side type
 };
 
@@ -49,62 +51,23 @@ export async function getHistoryItems(userId: string, service: ServiceType): Pro
     const db = client.db(process.env.MONGODB_DB_NAME || 'elevenlabs');
     const collection = db.collection<HistoryItem>(HISTORY_COLLECTION);
     
-    console.log(`Fetching history items for user: ${userId}, service: ${service}`);
-    console.log('Collection name:', HISTORY_COLLECTION);
-    console.log('Database name:', process.env.MONGODB_DB_NAME || 'elevenlabs');
-    
-    // First, let's check if the collection exists and has any data
-    const totalCount = await collection.countDocuments();
-    console.log(`Total documents in collection: ${totalCount}`);
-    
-    const userCount = await collection.countDocuments({ userId });
-    console.log(`Documents for user ${userId}: ${userCount}`);
-    
-    const serviceCount = await collection.countDocuments({ userId, service });
-    console.log(`Documents for user ${userId} and service ${service}: ${serviceCount}`);
-    
     const items = await collection
       .find({ userId, service } as const)
       .sort({ createdAt: -1, updatedAt: -1 } as const)
       .toArray();
       
-    console.log(`Found ${items.length} history items`);
-    console.log('Sample item:', items[0]);
-    
     return items.map((item: WithId<HistoryItem>) => {
-      try {
-        // Safely convert ObjectId to string
-        const id = item._id instanceof ObjectId ? item._id.toHexString() : String(item._id);
-        // Create a new object with the id field instead of _id
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { _id, ...rest } = item;
-        
-        // Ensure date and time are properly formatted
-        const clientItem = {
-          ...rest,
-          id,
-          // Ensure date is a string
-          date: typeof rest.date === 'string' ? rest.date : new Date(rest.date).toLocaleDateString(),
-          // Ensure time is a string
-          time: typeof rest.time === 'string' ? rest.time : new Date(rest.time).toLocaleTimeString(),
-          // Ensure title is not null or undefined
-          title: rest.title || 'Untitled',
-          // Ensure audioUrl is properly formatted
-          audioUrl: rest.audioUrl || null,
-        } as ClientHistoryItem;
-        
-        console.log('Mapped item:', clientItem);
-        return clientItem;
-      } catch (mapError) {
-        console.error('Error mapping history item:', mapError, item);
-        return null;
-      }
+      const { _id, createdAt, updatedAt, ...rest } = item;
+      return {
+        ...rest,
+        id: _id.toHexString(),
+        createdAt: createdAt.toISOString(),
+        updatedAt: updatedAt.toISOString(),
+      };
     }).filter((item): item is ClientHistoryItem => item !== null);
   } catch (error) {
     console.error('Error in getHistoryItems:', error);
     throw error; // Re-throw the error to be handled by the caller
-  } finally {
-    // Don't close the connection here as it's shared
   }
 }
 

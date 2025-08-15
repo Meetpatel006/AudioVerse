@@ -1,32 +1,32 @@
 import { PageLayout } from "~/components/client/creative-platform/page-layout";
-import { getHistoryItems, type ClientHistoryItem } from "~/lib/history-server";
+import { getHistoryItems } from "~/lib/history-server";
 import { TextToSpeechEditor } from "~/components/client/creative-platform/speech-synthesis/text-to-speech-editor";
-import { headers } from "next/headers";
+import { cookies } from "next/headers";
+import { verifyToken } from "~/lib/jwt";
 
 export default async function TextToSpeechPage() {
   const service = "styletts2";
-  
-  // Get user ID from headers set by middleware
-  const headersList = await headers();
-  const userId = headersList.get('x-user-id');
-  
+  const token = (await cookies()).get("token")?.value;
+  const user = token ? await verifyToken(token) : null;
+  const userId = user?.userId;
+
   if (!userId) {
-    throw new Error('User not authenticated');
+    return (
+      <PageLayout
+        title={"Text to Speech"}
+        service={service}
+        showSidebar={true}
+        historyItems={[]}
+      >
+        <div className="flex h-full items-center justify-center">
+          <p>Please sign in to view this page.</p>
+        </div>
+      </PageLayout>
+    );
   }
-  
-  console.log('Fetching history for user:', userId, 'service:', service);
-  
-  let historyItems: ClientHistoryItem[] = [];
-  try {
-    historyItems = await getHistoryItems(userId, service);
-    console.log('Successfully fetched history items:', historyItems.length);
-  } catch (error) {
-    console.error('Error fetching history items:', error);
-    historyItems = []; // Fallback to empty array
-  }
-  
-  // Set a default number of credits or implement your own logic
-  const credits = 1000;
+
+  const historyItems = await getHistoryItems(userId, service);
+  const credits = 1000; // Set a default number of credits or implement your own logic
 
   return (
     <PageLayout

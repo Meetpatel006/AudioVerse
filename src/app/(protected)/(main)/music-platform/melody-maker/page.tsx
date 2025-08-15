@@ -1,14 +1,15 @@
 import { PageLayout } from "~/components/client/music-platform/page-layout";
 import { MelodyMakerEditor } from "~/components/client/music-platform/melody-maker/melody-maker-editor";
 import { getHistoryItems } from "~/lib/history-server";
-import { getCurrentUser } from "~/lib/auth";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+import { cookies } from "next/headers";
+import { verifyToken } from "~/lib/jwt";
 
 export default async function MelodyMakerPage() {
   const service = "melody-maker";
-  const user = await getCurrentUser({ headers: headers() } as Request);
-  const userId = user?.id;
+  const token = (await cookies()).get("token")?.value;
+  const user = token ? await verifyToken(token) : null;
+  const userId = user?.userId;
 
   if (!userId) {
     return (
