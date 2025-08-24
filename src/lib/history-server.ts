@@ -40,23 +40,36 @@ const CONTAINER_NAME = process.env.AZURE_CONTAINER_NAME || 'works';
  * Get history items for a specific user and service
  */
 export async function getHistoryItems(userId: string, service: ServiceType): Promise<ClientHistoryItem[]> {
+  console.log(`[getHistoryItems] Starting to fetch history for userId: ${userId}, service: ${service}`);
   let client: MongoClient | undefined;
   
   try {
+    console.log('[getHistoryItems] Getting MongoDB client...');
     client = await getMongoClient();
     if (!client) {
+      console.error('[getHistoryItems] Failed to get MongoDB client');
       throw new Error('Failed to connect to MongoDB');
     }
     
-    const db = client.db(process.env.MONGODB_DB_NAME || 'elevenlabs');
+    const dbName = process.env.MONGODB_DB_NAME || 'elevenlabs';
+    console.log(`[getHistoryItems] Using database: ${dbName}`);
+    
+    const db = client.db(dbName);
     const collection = db.collection<HistoryItem>(HISTORY_COLLECTION);
     
+    console.log(`[getHistoryItems] Querying collection: ${HISTORY_COLLECTION}`);
+    
+    const query = { userId, service };
+    console.log(`[getHistoryItems] Query:`, JSON.stringify(query, null, 2));
+    
     const items = await collection
-      .find({ userId, service } as const)
+      .find(query)
       .sort({ createdAt: -1, updatedAt: -1 } as const)
       .toArray();
-      
-    return items.map((item: WithId<HistoryItem>) => {
+    
+    console.log(`[getHistoryItems] Found ${items.length} items`);
+    
+    const mappedItems = items.map((item: WithId<HistoryItem>) => {
       const { _id, createdAt, updatedAt, ...rest } = item;
       return {
         ...rest,
@@ -65,6 +78,9 @@ export async function getHistoryItems(userId: string, service: ServiceType): Pro
         updatedAt: updatedAt.toISOString(),
       };
     }).filter((item): item is ClientHistoryItem => item !== null);
+    
+    console.log(`[getHistoryItems] Mapped ${mappedItems.length} items`);
+    return mappedItems;
   } catch (error) {
     console.error('Error in getHistoryItems:', error);
     throw error; // Re-throw the error to be handled by the caller
@@ -75,11 +91,13 @@ export async function getHistoryItems(userId: string, service: ServiceType): Pro
  * Add a new history item
  */
 export async function addHistoryItem(item: NewHistoryItem): Promise<string | null> {
+  console.log('Adding history item:', JSON.stringify(item, null, 2));
   let client: MongoClient | undefined;
   
   try {
     client = await getMongoClient();
     if (!client) {
+      console.error('Failed to connect to MongoDB: No client returned');
       throw new Error('Failed to connect to MongoDB');
     }
     
@@ -87,14 +105,19 @@ export async function addHistoryItem(item: NewHistoryItem): Promise<string | nul
     let insertedId: ObjectId | undefined;
     
     await session.withTransaction(async () => {
-      const db = client!.db(process.env.MONGODB_DB_NAME || 'elevenlabs');
+      const dbName = process.env.MONGODB_DB_NAME || 'elevenlabs';
+      console.log('Using database:', dbName);
+      
+      const db = client!.db(dbName);
       const collection = db.collection<HistoryItem>(HISTORY_COLLECTION);
 
       // Ensure the blob exists if there's an audio URL
       if (item.audioUrl) {
         try {
+          console.log('Verifying blob container:', CONTAINER_NAME);
           const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
           await containerClient.createIfNotExists();
+          console.log('Blob container verified');
         } catch (blobError) {
           console.error('Error with blob storage:', blobError);
           // Continue even if blob storage fails

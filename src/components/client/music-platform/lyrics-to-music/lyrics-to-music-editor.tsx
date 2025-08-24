@@ -6,8 +6,13 @@ import { generateMusic } from "~/actions/generate-music";
 import { useAuth } from "~/contexts/AuthContext";
 import { useAudioStore } from "~/stores/audio-store";
 
-export function LyricsToMusicEditor() {
-  const { user } = useAuth();
+interface LyricsToMusicEditorProps {
+  service: string;
+  credits: number;
+  userId: string;
+}
+
+export function LyricsToMusicEditor({ service, credits, userId }: LyricsToMusicEditorProps) {
   const [duration, setDuration] = useState(30);
   const [tags, setTags] = useState("funk, pop, soul, rock, meloc");
   const [lyrics, setLyrics] = useState(
@@ -17,19 +22,13 @@ export function LyricsToMusicEditor() {
   const { setAudioUrl } = useAudioStore();
 
   const handleGenerate = async () => {
-    if (!user) {
-      // Handle case where user is not logged in
-      alert("Please sign in to generate music.");
-      return;
-    }
-
     setLoading(true);
     try {
       const result = await generateMusic({
         prompt: tags,
         lyrics: lyrics,
         audio_duration: duration,
-        userId: user.id,
+        userId: userId,
       });
       if (result.audioUrl) {
         setAudioUrl(result.audioUrl);

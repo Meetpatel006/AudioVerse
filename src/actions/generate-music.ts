@@ -4,6 +4,7 @@
 import { addHistoryItem } from "~/lib/history-server";
 import { env } from "~/env";
 import type { ServiceType } from "~/types/services";
+import { blobServiceClient } from "~/lib/azure-storage";
 
 const MUSIC_API_URL = env.LYRICS_TO_MUSIC_API_URL || "https://gcet--ace-step-flask-api-flask-app-dev.modal.run";
 
@@ -113,26 +114,37 @@ async function callMusicApi(endpoint: string, body: object, serviceName: Service
     const data = await response.json();
     console.log(`Received response from Music API (${endpoint}):`, JSON.stringify(data, null, 2));
     
-    const audioUrl = data.audio_url || (data.audio_base64 ? `data:audio/wav;base64,${data.audio_base64}` : null);
-    if (!audioUrl) {
-        throw new Error("No audio URL or base64 data received from the API.");
-    }
-    
+    const audioUrl = data.audio_url;
     const blobName = data.blob_name;
+    
+    if (!audioUrl) {
+      throw new Error("No audio URL received from the API.");
+    }
+
     const finalUserId = userId || 'anonymous';
+    const title = (body as BaseParams).prompt?.substring(0, 50) || 'Generated Music';
+    const time = new Date().toLocaleTimeString();
+    const date = new Date().toLocaleDateString();
+    
+    // No need to re-upload, just use the provided URL
+    try {
+      // Store metadata in MongoDB
+      await addHistoryItem({
+        title,
+        voice: null,
+        audioUrl,
+        time,
+        date,
+        service: serviceName,
+        userId: finalUserId,
+        blobName
+      });
 
-    await addHistoryItem({
-      title: (body as BaseParams).prompt?.substring(0, 50) || 'Generated Music',
-      voice: null,
-      audioUrl: audioUrl,
-      time: new Date().toLocaleTimeString(),
-      date: new Date().toLocaleDateString(),
-      service: serviceName,
-      userId: finalUserId,
-      blobName: blobName
-    });
-
-    return { audioUrl };
+      return { audioUrl };
+    } catch (error) {
+      console.error('Error uploading audio to blob storage:', error);
+      throw new Error('Failed to process the generated audio');
+    }
   } catch (error) {
     console.error(`Error in ${serviceName}:`, error);
     throw new Error(error instanceof Error ? error.message : `Failed to ${serviceName}`);
