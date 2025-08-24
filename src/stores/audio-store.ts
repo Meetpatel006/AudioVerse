@@ -24,6 +24,7 @@ interface AudioState {
   setIsPlaybarOpen: (isOpen: boolean) => void;
   setProgress: (progress: number) => void;
   setDuration: (duration: string) => void;
+  setAudioUrl: (audioUrl: string) => void;
 
   playAudio: (audio: AudioInfo) => void;
   togglePlayPause: () => void;
@@ -45,6 +46,25 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   setIsPlaybarOpen: (isPlaybarOpen) => set({ isPlaybarOpen }),
   setProgress: (progress) => set({ progress }),
   setDuration: (duration) => set({ duration }),
+  setAudioUrl: (audioUrl) => {
+    const current = get().currentAudio;
+    if (current) {
+      // Update the existing audio entry's URL
+      set({ currentAudio: { ...current, audioUrl }, isPlaybarOpen: true, isPlaying: false });
+    } else {
+      // Create a minimal audio entry when none exists
+      set({
+        currentAudio: {
+          id: Date.now().toString(),
+          title: "Generated Audio",
+          voice: null,
+          audioUrl,
+        },
+        isPlaybarOpen: true,
+        isPlaying: false,
+      });
+    }
+  },
 
   playAudio: async (audio) => {
     const current = get().currentAudio;

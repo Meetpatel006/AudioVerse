@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type TabType = "settings" | "history";
+type TabType = "settings" | "history" | "advanced" | "audio-tools";
 
 interface UIState {
   isMobileDrawerOpen: boolean;

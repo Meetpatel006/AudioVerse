@@ -187,6 +187,24 @@ class AudioManager {
     this.audioElement?.pause();
   }
 
+  skipForward(seconds = 10): void {
+    if (!this.audioElement) return;
+    try {
+      this.audioElement.currentTime = Math.min(this.audioElement.duration || Infinity, this.audioElement.currentTime + seconds);
+    } catch (e) {
+      console.warn('skipForward failed', e);
+    }
+  }
+
+  skipBackward(seconds = 10): void {
+    if (!this.audioElement) return;
+    try {
+      this.audioElement.currentTime = Math.max(0, this.audioElement.currentTime - seconds);
+    } catch (e) {
+      console.warn('skipBackward failed', e);
+    }
+  }
+
   getCurrentTime(): number {
     return this.audioElement ? this.audioElement.currentTime : 0;
   }
