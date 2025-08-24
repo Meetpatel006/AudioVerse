@@ -67,6 +67,8 @@ export const useVoiceStore = create<VoiceState>((set, get) => ({
     styletts2: defaultStyleTTS2Voice,
     seedvc: defaultSeedVCVoice,
     "make-an-audio": null,
+  "melody-maker": null,
+  "lyrics-to-music": null,
   },
   getVoices: (service) => {
     return get().voices.filter((voice) => voice.service === service);

@@ -53,7 +53,8 @@ async function connectToDatabase(): Promise<Mongoose> {
       bufferCommands: false, // Disable mongoose buffering
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts)
+  // MONGODB_URI is validated at runtime above; assert non-null for TypeScript here
+  cached.promise = mongoose.connect(MONGODB_URI!, opts)
       .then((mongoose) => {
         console.log('MongoDB connected successfully');
         return mongoose;

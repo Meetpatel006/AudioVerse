@@ -116,8 +116,8 @@ class AudioManager {
   private async fetchAndPlayBlob(url: string): Promise<void> {
     if (!this.audioElement) throw new Error('Audio element not initialized');
 
-    const extension = url.split('.').pop()?.split('?')[0].toLowerCase() || '';
-    const mimeType = this.getMimeType(extension);
+  const extension = (url.split('.').pop()?.split('?')?.[0] ?? '').toLowerCase();
+  const mimeType = this.getMimeType(extension);
 
     const res = await fetch(url, {
       method: 'GET',
@@ -141,9 +141,12 @@ class AudioManager {
     this.audioElement.src = this.currentBlobUrl;
 
     return new Promise((resolve, reject) => {
+      if (!this.audioElement) return reject(new Error('Audio element not initialized'));
+      const el = this.audioElement;
+
       const cleanup = () => {
-        this.audioElement?.removeEventListener('canplay', onCanPlay);
-        this.audioElement?.removeEventListener('error', onError);
+        el.removeEventListener('canplay', onCanPlay);
+        el.removeEventListener('error', onError);
       };
 
       const onCanPlay = () => {
@@ -157,10 +160,10 @@ class AudioManager {
         reject(new Error('Failed to play fetched Blob audio'));
       };
 
-      this.audioElement.addEventListener('canplay', onCanPlay, { once: true });
-      this.audioElement.addEventListener('error', onError, { once: true });
+      el.addEventListener('canplay', onCanPlay, { once: true });
+      el.addEventListener('error', onError, { once: true });
 
-      this.audioElement.load();
+      el.load();
     });
   }
 
