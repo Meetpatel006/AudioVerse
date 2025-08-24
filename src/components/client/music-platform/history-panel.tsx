@@ -1,7 +1,9 @@
 "use client";
 
+import * as React from "react";
+import { useMemo } from "react";
 import { IoDownloadOutline, IoPlay } from "react-icons/io5";
-import type { ClientHistoryItem as HistoryItemType } from "~/lib/history";
+import { type ClientHistoryItem, isHistoryItem } from "~/lib/history";
 import { useAudioStore } from "~/stores/audio-store";
 import { useVoiceStore, type Voice } from "~/stores/voice-store";
 import type { ServiceType } from "~/types/services";
@@ -12,20 +14,20 @@ export function HistoryPanel({
   setSearchQuery,
   hoveredItem,
   setHoveredItem,
-  historyItems,
+  historyItems = [] as ClientHistoryItem[],
 }: {
   service: ServiceType;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   hoveredItem: string | null;
   setHoveredItem: (id: string | null) => void;
-  historyItems?: HistoryItemType[];
+  historyItems?: ClientHistoryItem[];
 }) {
   const { playAudio } = useAudioStore();
   const getVoices = useVoiceStore((state) => state.getVoices);
   const voices = getVoices(service);
 
-  const handlePlayHistoryItem = (item: HistoryItemType) => {
+  const handlePlayHistoryItem = (item: ClientHistoryItem) => {
     if (item.audioUrl) {
       playAudio({
         id: item.id.toString(),
@@ -37,7 +39,92 @@ export function HistoryPanel({
     }
   };
 
-  console.log('HistoryPanel received historyItems:', historyItems);
+  // Memoize filtered and grouped items to avoid unnecessary recalculations
+  const { filteredGroups, filteredItems } = useMemo(() => {
+    // Ensure we have valid history items
+    const validItems = (historyItems || []).filter((item): item is ClientHistoryItem => 
+      Boolean(item) && isHistoryItem({ ...item, _id: item.id })
+    );
+
+    // Filter items based on search query
+    const filtered = validItems.filter((item) => {
+      const title = item.title || '';
+      const voiceName = item.voice ? voices.find((voice) => voice.id === item.voice)?.name || '' : '';
+      
+      return title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             voiceName.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    
+    // Group filtered items by date for display
+    const groups = filtered.reduce<Record<string, ClientHistoryItem[]>>((acc, item) => {
+      const date = item.date || 'Unknown Date';
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(item);
+      return acc;
+    }, {});
+    
+    const grouped = Object.entries(groups);
+    
+    return {
+      filteredItems: filtered,
+      filteredGroups: grouped,
+    };
+  }, [historyItems, searchQuery, voices]);
+
+  const renderContent = (): React.ReactNode => {
+    if (filteredItems.length > 0) {
+      return (
+        <div className="mt-2 flex h-[100vh] w-full flex-col overflow-y-auto">
+          {filteredGroups.map(([date, items]) => {
+            if (!items || !Array.isArray(items)) return null;
+            
+            return (
+              <div key={date}>
+                <div className="sticky top-0 z-10 my-2 flex w-full justify-center bg-white py-1">
+                  <div className="rounded-full bg-gray-100 px-3 py-1 text-xs">
+                    {date}
+                  </div>
+                </div>
+
+                {items.map((item) => (
+                  <HistoryItem
+                    key={item.id}
+                    item={item}
+                    voices={voices}
+                    hoveredItem={hoveredItem}
+                    setHoveredItem={setHoveredItem}
+                    onPlay={handlePlayHistoryItem}
+                  />
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+    
+    if (historyItems && historyItems.length > 0) {
+      return (
+        <div className="flex h-full flex-col items-center justify-center">
+          <p className="text-sm text-gray-500">No results found</p>
+          <p className="mt-2 text-xs text-gray-400">
+            Try a different search term or clear the search
+          </p>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex h-full flex-col items-center justify-center">
+        <p className="text-sm text-gray-500">No history items found</p>
+        <p className="mt-2 text-xs text-gray-400">
+          Your generated music will appear here
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -47,67 +134,12 @@ export function HistoryPanel({
             type="text"
             placeholder="Search history..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
       </div>
-
-      {historyItems && historyItems.length > 0 ? (
-        <div className="mt-2 flex h-[100vh] w-full flex-col overflow-y-auto">
-          {/* Filter history items based on search */}
-          {(() => {
-            const filteredItems = historyItems.filter((item) => {
-              const title = item.title || '';
-              const voiceName = item.voice ? voices.find((voice) => voice.id === item.voice)?.name || '' : '';
-              
-              return title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                     voiceName.toLowerCase().includes(searchQuery.toLowerCase());
-            });
-
-            const filteredGroups = Object.entries(
-              filteredItems.reduce((groups: Record<string, typeof historyItems>, item) => {
-                const date = item.date || 'Unknown Date';
-                groups[date] ??= [];
-                groups[date].push(item);
-                return groups;
-              }, {})
-            );
-
-            // Show no results found when filtered results are empty
-            return filteredGroups.length > 0 ? (
-              filteredGroups.map(([date, items], _groupIndex) => (
-                <div key={date}>
-                  <div className="sticky top-0 z-10 my-2 flex w-full justify-center bg-white py-1">
-                    <div className="rounded-full bg-gray-100 px-3 py-1 text-xs">
-                      {date}
-                    </div>
-                  </div>
-
-                  {items.map((item) => (
-                    <HistoryItem
-                      key={item.id}
-                      item={item}
-                      voices={voices}
-                      hoveredItem={hoveredItem}
-                      setHoveredItem={setHoveredItem}
-                      onPlay={handlePlayHistoryItem}
-                    />
-                  ))}
-                </div>
-              ))
-            ) : (
-              <p className="mt-8 text-center text-sm text-gray-500">
-                No results found
-              </p>
-            );
-          })()}
-        </div>
-      ) : (
-        <div className="flex h-full flex-col items-center justify-center text-center">
-          <p className="mt-3 text-sm text-gray-500">No history items yet</p>
-        </div>
-      )}
+      {renderContent()}
     </div>
   );
 }
@@ -119,11 +151,11 @@ function HistoryItem({
   setHoveredItem,
   onPlay,
 }: {
-  item: HistoryItemType;
+  item: ClientHistoryItem;
   voices: Voice[];
   hoveredItem: string | null;
   setHoveredItem: (id: string | null) => void;
-  onPlay: (item: HistoryItemType) => void;
+  onPlay: (item: ClientHistoryItem) => void;
 }) {
   const voiceUsed =
     item.voice ? voices.find((voice) => voice.id === item.voice) || null : null;

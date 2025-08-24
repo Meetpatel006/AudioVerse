@@ -19,7 +19,7 @@ export function LyricsToMusicEditor({ service, credits, userId }: LyricsToMusicE
     "[verse]\nNeon lights they flicker bright...\n[chorus]\nTogether we..."
   );
   const [loading, setLoading] = useState(false);
-  const { setAudioUrl } = useAudioStore();
+  const { playAudio } = useAudioStore();
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -31,7 +31,13 @@ export function LyricsToMusicEditor({ service, credits, userId }: LyricsToMusicE
         userId: userId,
       });
       if (result.audioUrl) {
-        setAudioUrl(result.audioUrl);
+        playAudio({
+          id: `generated-${Date.now()}`,
+          title: 'Generated Music',
+          voice: null,
+          audioUrl: result.audioUrl,
+          service: 'lyrics-to-music'
+        });
       }
     } catch (error) {
       console.error("Failed to generate music:", error);

@@ -90,88 +90,133 @@ export type ExtendMusicParams = Omit<GenerateMusicParams, 'audio2audio_enable' |
  * @param body The request body.
  * @param serviceName The name of the service for history tracking.
  * @param userId The user's ID.
- * @returns The audio URL.
+ * @returns The audio URL and audio ID.
  */
-async function callMusicApi(endpoint: string, body: object, serviceName: ServiceType, userId: string) {
+async function callMusicApi(endpoint: string, body: any, serviceName: ServiceType, userId: string) {
   try {
-    console.log(`Starting music generation request for service: ${serviceName}`);
-    console.log(`Sending payload to Music API (${endpoint}):`, JSON.stringify(body, null, 2));
-
     const response = await fetch(`${MUSIC_API_URL}${endpoint}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': process.env.LYRICS_TO_MUSIC_API_KEY || ''
+      },
       body: JSON.stringify(body)
     });
 
-    console.log(`Music API response from ${endpoint}:`, response.status, response.statusText);
-
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      console.error(`Music API error response from ${endpoint}:`, response.status, response.statusText, error);
       throw new Error(error.detail || `Failed to ${serviceName}`);
     }
 
     const data = await response.json();
-    console.log(`Received response from Music API (${endpoint}):`, JSON.stringify(data, null, 2));
-    
     const audioUrl = data.audio_url;
-    const blobName = data.blob_name;
+    const blobName = data.blob_name || `music-${Date.now()}.wav`;
     
     if (!audioUrl) {
       throw new Error("No audio URL received from the API.");
     }
 
-    const finalUserId = userId || 'anonymous';
-    const title = (body as BaseParams).prompt?.substring(0, 50) || 'Generated Music';
-    const time = new Date().toLocaleTimeString();
-    const date = new Date().toLocaleDateString();
+    // Generate a unique ID for this audio generation
+    const audioId = Math.random().toString(36).substring(2, 15);
     
-    // No need to re-upload, just use the provided URL
+    // Use the provided user ID or fall back to 'anonymous'
+    const finalUserId = userId || 'anonymous';
+    
+    // Create a title from the prompt or use a default
+    const title = (body.prompt || 'Generated Music').substring(0, 50) + 
+                 ((body.prompt && body.prompt.length > 50) ? '...' : '');
+    
+    // Store in history
     try {
-      // Store metadata in MongoDB
       await addHistoryItem({
         title,
         voice: null,
         audioUrl,
-        time,
-        date,
+        time: new Date().toLocaleTimeString(),
+        date: new Date().toLocaleDateString(),
         service: serviceName,
         userId: finalUserId,
         blobName
       });
-
-      return { audioUrl };
-    } catch (error) {
-      console.error('Error uploading audio to blob storage:', error);
-      throw new Error('Failed to process the generated audio');
+    } catch (historyError) {
+      // Don't fail the request if history saving fails
     }
+
+    return {
+      audioId,
+      audioUrl,
+      shouldShowThrottleAlert: false
+    };
   } catch (error) {
     console.error(`Error in ${serviceName}:`, error);
     throw new Error(error instanceof Error ? error.message : `Failed to ${serviceName}`);
   }
 }
 
-export async function generateMusic(params: GenerateMusicParams) {
+export async function generateMusic(params: GenerateMusicParams & { userId: string }) {
   const { userId, ...body } = params;
-  return callMusicApi('/generate', body, 'lyrics-to-music' as ServiceType, userId);
+  
+  // Ensure required fields have default values
+  const requestBody = {
+    prompt: '',
+    lyrics: '',
+    audio_duration: 30, // Default duration in seconds
+    format: 'wav',     // Default format
+    ...body            // Override with any provided values
+  };
+  
+  try {
+    return await callMusicApi(
+      '/generate', 
+      requestBody, 
+      'lyrics-to-music' as ServiceType, 
+      userId
+    );
+  } catch (error) {
+    throw error;
+  }
 }
 
-export async function retakeMusic(params: RetakeMusicParams) {
+export async function retakeMusic(params: RetakeMusicParams & { userId: string }) {
   const { userId, ...body } = params;
-  return callMusicApi('/generate/retake', body, 'lyrics-to-music' as ServiceType, userId);
+  
+  return callMusicApi(
+    '/generate/retake', 
+    body, 
+    'lyrics-to-music' as ServiceType, 
+    userId
+  );
 }
 
-export async function repaintMusic(params: RepaintMusicParams) {
+export async function repaintMusic(params: RepaintMusicParams & { userId: string }) {
   const { userId, ...body } = params;
-  return callMusicApi('/generate/repaint', body, 'lyrics-to-music' as ServiceType, userId);
+  
+  return callMusicApi(
+    '/generate/repaint', 
+    body, 
+    'lyrics-to-music' as ServiceType, 
+    userId
+  );
 }
 
-export async function editMusic(params: EditMusicParams) {
+export async function editMusic(params: EditMusicParams & { userId: string }) {
   const { userId, ...body } = params;
-  return callMusicApi('/generate/edit', body, 'lyrics-to-music' as ServiceType, userId);
+  
+  return callMusicApi(
+    '/generate/edit', 
+    body, 
+    'lyrics-to-music' as ServiceType, 
+    userId
+  );
 }
 
-export async function extendMusic(params: ExtendMusicParams) {
+export async function extendMusic(params: ExtendMusicParams & { userId: string }) {
   const { userId, ...body } = params;
-  return callMusicApi('/generate/extend', body, 'lyrics-to-music' as ServiceType, userId);
+  
+  return callMusicApi(
+    '/generate/extend', 
+    body, 
+    'lyrics-to-music' as ServiceType, 
+    userId
+  );
 }
