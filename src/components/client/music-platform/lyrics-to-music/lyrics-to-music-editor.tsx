@@ -1,126 +1,133 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
-import type { ServiceType } from "~/types/services";
-import Sidebar from "../sidebar";
-import { useUIStore } from "~/stores/ui-store";
-import { IoClose, IoMenu } from "react-icons/io5";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { MelodySidebar } from "./right-sidebar";
-import type { ClientHistoryItem } from "~/lib/history";
-import Playbar from "../playbar";
-import { useAudioStore } from "~/stores/audio-store";
-import { MobileSettingsButton } from "../mobile-settings-button";
+import { useState } from "react";
+import { GenerateButton } from "../generate-button";
 
-interface TabItem {
-  name: string;
-  path: string;
-}
+export function LyricsToMusicEditor() {
+  const [duration, setDuration] = useState(30);
+  const [tags, setTags] = useState("funk, pop, soul, rock, meloc");
+  const [lyrics, setLyrics] = useState(
+    "[verse]\nNeon lights they flicker bright...\n[chorus]\nTogether we..."
+  );
+  const [loading, setLoading] = useState(false);
 
-export function PageLayout({
-  title,
-  children,
-  service,
-  tabs,
-  showSidebar = true,
-  historyItems,
-}: {
-  title: string;
-  children: ReactNode;
-  service: ServiceType;
-  tabs?: TabItem[];
-  showSidebar: boolean;
-  historyItems?: ClientHistoryItem[];
-}) {
-  const pathname = usePathname();
-  const {
-    isMobileDrawerOpen,
-    isMobileScreen,
-    toggleMobileDrawer,
-    setMobileScreen,
-    toggleMobileMenu,
-  } = useUIStore();
-  const { currentAudio } = useAudioStore();
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setMobileScreen(window.innerWidth < 1024);
-    };
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, [setMobileScreen]);
+  const handleGenerate = () => {
+    // Add generation logic here
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+  };
 
   return (
-    <div className="flex h-screen">
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-
-      {isMobileScreen && isMobileDrawerOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50" />
-      )}
-
-      <div
-        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${isMobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        <div className="shadow-log relative h-full w-64 bg-white">
-          <button
-            onClick={toggleMobileDrawer}
-            className="absolute right-2 top-2 rounded-full p-2 text-gray-500 hover:bg-gray-100"
-          >
-            <IoClose />
-          </button>
-          <Sidebar isMobile={true} />
-        </div>
-      </div>
-
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="border-b border-gray-200">
-          <div className="flex h-16 items-center px-4">
-            {isMobileScreen && (
-              <button
-                onClick={toggleMobileDrawer}
-                className="mr-3 rounded-lg hover:bg-gray-100 lg:hidden"
-              >
-                <IoMenu className="h-6 w-6" />
-              </button>
-            )}
-            <h1 className="text-md font-semibold">{title}</h1>
-
-            {tabs && tabs.length > 0 && (
-              <div className="ml-4 flex items-center">
-                {tabs.map((tab) => (
-                  <Link
-                    className={`mr-2 rounded-full px-3 py-1 text-sm transition-colors duration-200 ${pathname === tab.path ? "bg-black text-white" : "text-gray-500 hover:text-gray-700"}`}
-                    key={tab.path}
-                    href={tab.path}
-                  >
-                    {tab.name}
-                  </Link>
-                ))}
-              </div>
-            )}
+    <div className="flex flex-col h-full">
+      <div className="flex-grow">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Audio Duration</h2>
+          <p className="text-gray-500 mb-4">
+            Control the length of your generated audio
+          </p>
+          <div className="flex items-center mb-4">
+            <span className="mr-4">Duration: {duration}s</span>
+            <input
+              type="range"
+              min="1"
+              max="120"
+              value={duration}
+              onChange={(e) => setDuration(parseInt(e.target.value))}
+              className="w-full"
+            />
+          </div>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setDuration(30)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${duration === 30
+                ? "bg-black text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              30s
+            </button>
+            <button
+              onClick={() => setDuration(60)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${duration === 60
+                ? "bg-black text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              60s
+            </button>
+            <button
+              onClick={() => setDuration(120)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${duration === 120
+                ? "bg-black text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              120s
+            </button>
+            <button
+              onClick={() => setDuration(Math.floor(Math.random() * 120) + 1)}
+              className="rounded-lg px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+            >
+              Random
+            </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto">
-          <div className="flex h-full">
-            <div className="flex-1 px-6 py-5">
-              <div className="flex h-full flex-col">{children}</div>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Preset & Tags</h2>
+          <p className="text-gray-500 mb-4">
+            Choose presets or add custom style tags
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Preset
+              </label>
+              <select className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black">
+                <option>Custom</option>
+                {/* Add other presets here */}
+              </select>
             </div>
-
-            {showSidebar && service && (
-              <MelodySidebar historyItems={historyItems} service={service} />
-            )}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Tags
+              </label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+              />
+            </div>
           </div>
         </div>
 
-        {isMobileScreen && !pathname.startsWith("/sound-effects") && (
-          <MobileSettingsButton toggleMobileMenu={toggleMobileMenu} />
-        )}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Lyrics</h2>
+          <p className="text-gray-500 mb-4">
+            Add structured lyrics with tags
+          </p>
+          <textarea
+            value={lyrics}
+            onChange={(e) => setLyrics(e.target.value)}
+            placeholder="[verse]..."
+            className="min-h-[120px] w-full rounded-lg border border-gray-300 p-3 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          />
+        </div>
+      </div>
 
-        {currentAudio && <Playbar />}
+      <div className="mt-4">
+        <GenerateButton
+          onGenerate={handleGenerate}
+          isDisabled={loading}
+          isLoading={loading}
+          showDownload={false}
+          creditsRemaining={0}
+          showCredits={false}
+          buttonText="Generate Audio"
+        />
       </div>
     </div>
   );

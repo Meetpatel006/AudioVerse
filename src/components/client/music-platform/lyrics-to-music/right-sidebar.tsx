@@ -6,6 +6,8 @@ import { HistoryPanel } from "../history-panel";
 import { useState } from "react";
 import type { ClientHistoryItem } from "~/lib/history";
 import { IoClose } from "react-icons/io5";
+import { AdvancedSettingsPanel } from "./advanced-settings-panel";
+import { AudioToolsPanel } from "./audio-tools-panel";
 
 export function MelodySidebar({
   service,
@@ -36,16 +38,32 @@ export function MelodySidebar({
           >
             History
           </button>
+          <button
+            onClick={() => setActiveTab("advanced")}
+            className={`relative z-10 mr-4 pb-2 text-sm transition-colors duration-200 ${activeTab === "advanced" ? "border-b-2 border-black text-black" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            Advanced Settings
+          </button>
+          <button
+            onClick={() => setActiveTab("audio-tools")}
+            className={`relative z-10 mr-4 pb-2 text-sm transition-colors duration-200 ${activeTab === "audio-tools" ? "border-b-2 border-black text-black" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            Audio Tools
+          </button>
         </div>
         <div className="transition-opacity duration-200">
-          <HistoryPanel
-            service={service}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            hoveredItem={hoveredItem}
-            setHoveredItem={setHoveredItem}
-            historyItems={historyItems}
-          />
+          {activeTab === "history" && (
+            <HistoryPanel
+              service={service}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              hoveredItem={hoveredItem}
+              setHoveredItem={setHoveredItem}
+              historyItems={historyItems}
+            />
+          )}
+          {activeTab === "advanced" && <AdvancedSettingsPanel />}
+          {activeTab === "audio-tools" && <AudioToolsPanel />}
         </div>
       </div>
 
@@ -76,18 +94,34 @@ export function MelodySidebar({
             >
               History
             </button>
+            <button
+              onClick={() => setActiveTab("advanced")}
+              className={`relative z-10 mr-4 pb-2 text-sm transition-colors duration-200 ${activeTab === "advanced" ? "border-b-2 border-black text-black" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              Advanced Settings
+            </button>
+            <button
+              onClick={() => setActiveTab("audio-tools")}
+              className={`relative z-10 mr-4 pb-2 text-sm transition-colors duration-200 ${activeTab === "audio-tools" ? "border-b-2 border-black text-black" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              Audio Tools
+            </button>
           </div>
 
           {/* Tab content */}
           <div className="transition-opacity duration-200">
-            <HistoryPanel
-              service={service}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              hoveredItem={hoveredItem}
-              setHoveredItem={setHoveredItem}
-              historyItems={historyItems}
-            />
+            {activeTab === "history" && (
+              <HistoryPanel
+                service={service}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                hoveredItem={hoveredItem}
+                setHoveredItem={setHoveredItem}
+                historyItems={historyItems}
+              />
+            )}
+            {activeTab === "advanced" && <AdvancedSettingsPanel />}
+            {activeTab === "audio-tools" && <AudioToolsPanel />}
           </div>
         </div>
       </div>
