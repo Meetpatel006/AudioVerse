@@ -1,1 +1,1 @@
-export type ServiceType = "styletts2" | "seedvc" | "make-an-audio" | "melody-maker";
+export type ServiceType = "styletts2" | "seedvc" | "make-an-audio" | "melody-maker" | "lyrics-to-music";

@@ -2,21 +2,44 @@
 
 import { useState } from "react";
 import { GenerateButton } from "../generate-button";
+import { generateMusic } from "~/actions/generate-music";
+import { useAuth } from "~/contexts/AuthContext";
+import { useAudioStore } from "~/stores/audio-store";
 
 export function LyricsToMusicEditor() {
+  const { user } = useAuth();
   const [duration, setDuration] = useState(30);
   const [tags, setTags] = useState("funk, pop, soul, rock, meloc");
   const [lyrics, setLyrics] = useState(
     "[verse]\nNeon lights they flicker bright...\n[chorus]\nTogether we..."
   );
   const [loading, setLoading] = useState(false);
+  const { setAudioUrl } = useAudioStore();
 
-  const handleGenerate = () => {
-    // Add generation logic here
+  const handleGenerate = async () => {
+    if (!user) {
+      // Handle case where user is not logged in
+      alert("Please sign in to generate music.");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const result = await generateMusic({
+        prompt: tags,
+        lyrics: lyrics,
+        audio_duration: duration,
+        userId: user.id,
+      });
+      if (result.audioUrl) {
+        setAudioUrl(result.audioUrl);
+      }
+    } catch (error) {
+      console.error("Failed to generate music:", error);
+      alert("Failed to generate music. Please try again.");
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   return (

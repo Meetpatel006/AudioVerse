@@ -1,61 +1,83 @@
 'use client';
 
 import { useState } from "react";
+import { editMusic } from "~/actions/generate-music";
+import { useAuth } from "~/contexts/AuthContext";
+import { useAudioStore } from "~/stores/audio-store";
+import { GenerateButton } from "../generate-button";
+
+// TODO: These should come from a shared store or props
+const MOCK_ORIGINAL_PROMPT = "A cheerful pop song with guitar and drums";
+const MOCK_SRC_AUDIO_PATH = "https://example.com/audio.wav"; // This should be the URL of the audio to edit
 
 export function EditPanel() {
-  const [tags, setTags] = useState("");
-  const [lyrics, setLyrics] = useState("");
-  const [seed, setSeed] = useState("");
-  const [editType, setEditType] = useState("only_lyrics");
-  const [editMin, setEditMin] = useState(0.6);
-  const [editMax, setEditMax] = useState(1.0);
-  const [source, setSource] = useState("text2music");
+  const { user } = useAuth();
+  const { setAudioUrl } = useAudioStore();
+  const [loading, setLoading] = useState(false);
+
+  const [editTargetPrompt, setEditTargetPrompt] = useState("A cheerful pop song with heavy bass");
+  const [editTargetLyrics, setEditTargetLyrics] = useState("");
+  const [editMin, setEditMin] = useState(0.2);
+  const [editMax, setEditMax] = useState(0.8);
+
+  const handleEdit = async () => {
+    if (!user) {
+      alert("Please sign in to edit music.");
+      return;
+    }
+    if (!MOCK_SRC_AUDIO_PATH) {
+        alert("Please generate or select an audio to edit first.");
+        return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await editMusic({
+        prompt: MOCK_ORIGINAL_PROMPT,
+        src_audio_path: MOCK_SRC_AUDIO_PATH,
+        edit_target_prompt: editTargetPrompt,
+        edit_target_lyrics: editTargetLyrics,
+        edit_n_min: editMin,
+        edit_n_max: editMax,
+        userId: user.id,
+      });
+      if (result.audioUrl) {
+        setAudioUrl(result.audioUrl);
+      }
+    } catch (error) {
+      console.error("Failed to edit music:", error);
+      alert("Failed to edit music. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Edit Tags</label>
+        <label className="block text-sm font-medium text-gray-700">Edit Target Prompt</label>
         <input
           type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
+          value={editTargetPrompt}
+          onChange={(e) => setEditTargetPrompt(e.target.value)}
           className="w-full rounded-lg border border-gray-300 p-2 text-sm"
         />
-        <p className="text-xs text-gray-500">Extra descriptive tags to steer edits.</p>
+        <p className="text-xs text-gray-500">New prompt describing the desired changes.</p>
       </div>
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Edit Lyrics</label>
+        <label className="block text-sm font-medium text-gray-700">Edit Target Lyrics</label>
         <textarea
-          value={lyrics}
-          onChange={(e) => setLyrics(e.target.value)}
+          value={editTargetLyrics}
+          onChange={(e) => setEditTargetLyrics(e.target.value)}
           className="w-full rounded-lg border border-gray-300 p-2 text-sm"
         />
-        <p className="text-xs text-gray-500">Replace or modify lyrics directly.</p>
+        <p className="text-xs text-gray-500">New lyrics for the edited section.</p>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Edit Seeds</label>
-        <input
-          type="text"
-          value={seed}
-          onChange={(e) => setSeed(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 p-2 text-sm"
-        />
-        <p className="text-xs text-gray-500">Custom seed values for reproducibility.</p>
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Edit Type</label>
-        <select
-          value={editType}
-          onChange={(e) => setEditType(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 p-2 text-sm"
-        >
-          <option value="only_lyrics">only_lyrics</option>
-          <option value="remix">remix</option>
-        </select>
-      </div>
+      
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Edit Min</label>
+          <label className="block text-sm font-medium text-gray-700">Edit Min: {editMin.toFixed(1)}</label>
           <input
             type="range"
             min="0"
@@ -67,7 +89,7 @@ export function EditPanel() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Edit Max</label>
+          <label className="block text-sm font-medium text-gray-700">Edit Max: {editMax.toFixed(1)}</label>
           <input
             type="range"
             min="0"
@@ -79,19 +101,15 @@ export function EditPanel() {
           />
         </div>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Edit Source</label>
-        <select
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 p-2 text-sm"
-        >
-          <option value="text2music">text2music</option>
-          <option value="last_edit">last_edit</option>
-          <option value="upload">upload</option>
-        </select>
-      </div>
-      <button className="w-full rounded-lg bg-black py-2 text-white">Edit</button>
+      <GenerateButton
+        onGenerate={handleEdit}
+        isDisabled={loading}
+        isLoading={loading}
+        showDownload={false}
+        creditsRemaining={0}
+        showCredits={false}
+        buttonText="Edit"
+      />
     </div>
   );
 }
