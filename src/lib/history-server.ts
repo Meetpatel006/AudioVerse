@@ -40,36 +40,26 @@ const CONTAINER_NAME = process.env.AZURE_CONTAINER_NAME || 'works';
  * Get history items for a specific user and service
  */
 export async function getHistoryItems(userId: string, service: ServiceType): Promise<ClientHistoryItem[]> {
-  console.log(`[getHistoryItems] Starting to fetch history for userId: ${userId}, service: ${service}`);
   let client: MongoClient | undefined;
   
   try {
-    console.log('[getHistoryItems] Getting MongoDB client...');
     client = await getMongoClient();
     if (!client) {
-      console.error('[getHistoryItems] Failed to get MongoDB client');
       throw new Error('Failed to connect to MongoDB');
     }
     
     const dbName = process.env.MONGODB_DB_NAME || 'elevenlabs';
-    console.log(`[getHistoryItems] Using database: ${dbName}`);
-    
     const db = client.db(dbName);
     const collection = db.collection<HistoryItem>(HISTORY_COLLECTION);
     
-    console.log(`[getHistoryItems] Querying collection: ${HISTORY_COLLECTION}`);
-    
     const query = { userId, service };
-    console.log(`[getHistoryItems] Query:`, JSON.stringify(query, null, 2));
     
     const items = await collection
       .find(query)
       .sort({ createdAt: -1, updatedAt: -1 } as const)
       .toArray();
     
-    console.log(`[getHistoryItems] Found ${items.length} items`);
-    
-    const mappedItems = items.map((item: WithId<HistoryItem>) => {
+    return items.map((item: WithId<HistoryItem>) => {
       const { _id, createdAt, updatedAt, ...rest } = item;
       return {
         ...rest,
@@ -78,12 +68,8 @@ export async function getHistoryItems(userId: string, service: ServiceType): Pro
         updatedAt: updatedAt.toISOString(),
       };
     }).filter((item): item is ClientHistoryItem => item !== null);
-    
-    console.log(`[getHistoryItems] Mapped ${mappedItems.length} items`);
-    return mappedItems;
   } catch (error) {
-    console.error('Error in getHistoryItems:', error);
-    throw error; // Re-throw the error to be handled by the caller
+    throw error;
   }
 }
 
@@ -91,13 +77,11 @@ export async function getHistoryItems(userId: string, service: ServiceType): Pro
  * Add a new history item
  */
 export async function addHistoryItem(item: NewHistoryItem): Promise<string | null> {
-  console.log('Adding history item:', JSON.stringify(item, null, 2));
   let client: MongoClient | undefined;
   
   try {
     client = await getMongoClient();
     if (!client) {
-      console.error('Failed to connect to MongoDB: No client returned');
       throw new Error('Failed to connect to MongoDB');
     }
     
@@ -106,20 +90,15 @@ export async function addHistoryItem(item: NewHistoryItem): Promise<string | nul
     
     await session.withTransaction(async () => {
       const dbName = process.env.MONGODB_DB_NAME || 'elevenlabs';
-      console.log('Using database:', dbName);
-      
       const db = client!.db(dbName);
       const collection = db.collection<HistoryItem>(HISTORY_COLLECTION);
 
       // Ensure the blob exists if there's an audio URL
       if (item.audioUrl) {
         try {
-          console.log('Verifying blob container:', CONTAINER_NAME);
           const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
           await containerClient.createIfNotExists();
-          console.log('Blob container verified');
-        } catch (blobError) {
-          console.error('Error with blob storage:', blobError);
+        } catch {
           // Continue even if blob storage fails
         }
       }
@@ -141,22 +120,15 @@ export async function addHistoryItem(item: NewHistoryItem): Promise<string | nul
         updatedAt: now,
       };
       
-      console.log('Adding history item to MongoDB:', historyItem);
-      
       // Insert the new item
       const result = await collection.insertOne(historyItem);
       insertedId = result.insertedId;
-      
-      console.log('History item inserted with ID:', insertedId);
     });
     
     await session.endSession();
     
-    // Safely convert ObjectId to string
     return insertedId ? insertedId.toString() : null;
-  } catch (error) {
-    console.error('Error adding history item:', error);
-    // Return null instead of the error
+  } catch {
     return null;
   }
 }
@@ -187,16 +159,12 @@ export async function deleteHistoryItem(itemId: string, userId: string): Promise
           userId 
         } as const);
 
-        console.log(`Deleting history item: ${itemId} for user: ${userId}`);
-
         if (item?.blobName) {
           try {
             const containerClient = blobServiceClient.getContainerClient(CONTAINER_NAME);
             const blockBlobClient = containerClient.getBlockBlobClient(item.blobName);
             await blockBlobClient.deleteIfExists();
-            console.log(`Deleted blob: ${item.blobName}`);
-          } catch (error) {
-            console.error('Error deleting blob:', error);
+          } catch {
             // Continue with deleting the DB record even if blob deletion fails
           }
         }
@@ -208,7 +176,6 @@ export async function deleteHistoryItem(itemId: string, userId: string): Promise
         } as const);
         
         deleted = result.deletedCount > 0;
-        console.log(`Deleted ${result.deletedCount} history records`);
       });
       
       return deleted;
@@ -216,7 +183,6 @@ export async function deleteHistoryItem(itemId: string, userId: string): Promise
       await session.endSession();
     }
   } catch (error) {
-    console.error('Error in deleteHistoryItem:', error);
-    throw error; // Re-throw the error to be handled by the caller
+    throw error;
   }
 }
