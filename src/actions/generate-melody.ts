@@ -18,7 +18,6 @@ export async function generateMelody(
   userId: string
 ) {
   try {
-    console.log("Starting melody generation request");
     // Map our parameters to the API parameters
     const requestBody = {
       text: prompt,
@@ -32,9 +31,6 @@ export async function generateMelody(
       num_variations: 1 // Default to 1 variation
     };
 
-    // Log the payload for debugging
-    console.log("Sending payload to Melody Maker API:", JSON.stringify(requestBody, null, 2));
-
     const response = await fetch(`${MELODY_MAKER_API_URL}/generate`, {
       method: 'POST',
       headers: {
@@ -43,8 +39,6 @@ export async function generateMelody(
       body: JSON.stringify(requestBody)
     });
 
-    console.log("Melody Maker API response:", response.status, response.statusText);
-
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       console.error("Melody Maker API error response:", response.status, response.statusText, error);
@@ -52,7 +46,6 @@ export async function generateMelody(
     }
 
     const data = await response.json();
-    console.log("Received response from Melody Maker API:", JSON.stringify(data, null, 2));
     const audioUrl = data.audio_url;
     const blobName = data.blob_name;
 
@@ -80,7 +73,7 @@ export async function generateMelody(
       audioUrl
     };
   } catch (error) {
-    console.error('Error generating melody:', error);
+    console.error('Error generating melody');
     throw new Error(error instanceof Error ? error.message : 'Failed to generate melody');
   }
 }
@@ -100,7 +93,7 @@ export async function generationStatus(
       audioUrl: null
     };
   } catch (error) {
-    console.error('Error checking generation status:', error);
+    console.error('Error checking generation status');
     return {
       success: false,
       audioUrl: null

@@ -17,10 +17,7 @@ export interface Voice {
 }
 
 export async function getAvailableVoices(service = 'styletts2'): Promise<Voice[]> {
-  console.log('getAvailableVoices called with service:', service);
-  
   if (service === 'seedvc') {
-    console.log('Returning Seed-VC voices');
     return [
       { id: 'male', name: 'Male' },
       { id: 'female', name: 'Female' },
@@ -30,8 +27,6 @@ export async function getAvailableVoices(service = 'styletts2'): Promise<Voice[]
   
   // Default to StyleTTS2 voices
   try {
-    console.log('Fetching voices from:', `${STYLETTS2_API_URL}/voices`);
-    
     const response = await fetch(`${STYLETTS2_API_URL}/voices`, {
       method: 'GET',
       headers: {
@@ -42,8 +37,6 @@ export async function getAvailableVoices(service = 'styletts2'): Promise<Voice[]
       signal: AbortSignal.timeout(10000) // 10 second timeout
     });
 
-    console.log('Response status:', response.status);
-    
     if (!response.ok) {
       let errorDetail = 'Failed to fetch available voices';
       try {
