@@ -20,7 +20,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.className}`}>
+    <html lang="en" className={`light ${inter.className}`}>
       <body>
         <AuthProvider>
           <Toaster />

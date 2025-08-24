@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 const LandingPage = dynamic(() => import('./landing-page'), {
   ssr: false,
   loading: () => (
-    <div className="flex min-h-screen items-center justify-center bg-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-white">
       <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
     </div>
   ),
