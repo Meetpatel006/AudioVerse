@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { editMusic } from "~/actions/generate-music";
+// Use API route so it appears in Network tab
 import { useAuth } from "~/contexts/AuthContext";
 import { useAudioStore } from "~/stores/audio-store";
 import { GenerateButton } from "../generate-button";
@@ -32,15 +32,22 @@ export function EditPanel() {
 
     setLoading(true);
     try {
-      const result = await editMusic({
-        prompt: MOCK_ORIGINAL_PROMPT,
-        src_audio_path: MOCK_SRC_AUDIO_PATH,
-        edit_target_prompt: editTargetPrompt,
-        edit_target_lyrics: editTargetLyrics,
-        edit_n_min: editMin,
-        edit_n_max: editMax,
-        userId: user.id,
+      const resp = await fetch("/api/generate-music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "edit",
+          prompt: MOCK_ORIGINAL_PROMPT,
+          src_audio_path: MOCK_SRC_AUDIO_PATH,
+          edit_target_prompt: editTargetPrompt,
+          edit_target_lyrics: editTargetLyrics,
+          edit_n_min: editMin,
+          edit_n_max: editMax,
+          userId: user.id,
+        }),
       });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Failed to edit");
+      const result = await resp.json();
       if (result.audioUrl) {
         setAudioUrl(result.audioUrl);
       }

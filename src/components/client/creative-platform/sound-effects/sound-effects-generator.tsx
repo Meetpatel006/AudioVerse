@@ -13,10 +13,7 @@ import {
   IoHardwareChipOutline,
   IoAirplaneOutline,
 } from "react-icons/io5";
-import {
-  generateSoundEffect,
-  generationStatus,
-} from "~/actions/generate-speech";
+// Use API route for generation status
 import toast from "react-hot-toast";
 
 const MAX_CHARS = 500;
@@ -38,8 +35,13 @@ export function SoundEffectsGenerator({ credits, userId }: { credits: number; us
 
     try {
       setLoading(true);
-      const { audioId, shouldShowThrottleAlert, audioUrl } =
-        await generateSoundEffect(textContent, userId);
+      const resp = await fetch("/api/generate-speech/sound-effect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: textContent, userId }),
+      });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Failed to generate");
+      const { audioId, shouldShowThrottleAlert, audioUrl } = await resp.json();
         
       if (audioUrl) {
         // Play the audio immediately after generation
@@ -90,7 +92,13 @@ export function SoundEffectsGenerator({ credits, userId }: { credits: number; us
 
     const checkStatus = async () => {
       try {
-        const status = await generationStatus(currentAudioId);
+        const statusResp = await fetch("/api/generate-speech/generation-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audioId: currentAudioId }),
+        });
+        if (!statusResp.ok) throw new Error((await statusResp.json()).error || "Failed to check status");
+        const status = await statusResp.json();
 
         if (!isMounted) return;
 

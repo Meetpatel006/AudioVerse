@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { GenerateButton } from "../generate-button";
-import { generateMusic } from "~/actions/generate-music";
+// Call API route instead of importing server action so requests show in Network
 import { useAuth } from "~/contexts/AuthContext";
 import { useAudioStore } from "~/stores/audio-store";
 
@@ -24,12 +24,13 @@ export function LyricsToMusicEditor({ service, credits, userId }: LyricsToMusicE
   const handleGenerate = async () => {
     setLoading(true);
     try {
-      const result = await generateMusic({
-        prompt: tags,
-        lyrics: lyrics,
-        audio_duration: duration,
-        userId: userId,
+      const resp = await fetch("/api/generate-music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "generate", prompt: tags, lyrics, audio_duration: duration, userId }),
       });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Failed to generate music");
+      const result = await resp.json();
       if (result.audioUrl) {
         playAudio({
           id: `generated-${Date.now()}`,

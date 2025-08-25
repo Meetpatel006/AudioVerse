@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { extendMusic } from "~/actions/generate-music";
+// Use API route so it appears in Network tab
 import { useAuth } from "~/contexts/AuthContext";
 import { useAudioStore } from "~/stores/audio-store";
 import { GenerateButton } from "../generate-button";
@@ -35,14 +35,21 @@ export function ExtendPanel() {
 
     setLoading(true);
     try {
-      const result = await extendMusic({
-        prompt: MOCK_PROMPT,
-        src_audio_path: MOCK_SRC_AUDIO_PATH,
-        extend_seeds: extendSeeds,
-        left_extend_length: leftExtendLength,
-        right_extend_length: rightExtendLength,
-        userId: user.id,
+      const resp = await fetch("/api/generate-music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "extend",
+          prompt: MOCK_PROMPT,
+          src_audio_path: MOCK_SRC_AUDIO_PATH,
+          extend_seeds: extendSeeds,
+          left_extend_length: leftExtendLength,
+          right_extend_length: rightExtendLength,
+          userId: user.id,
+        }),
       });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Failed to extend");
+      const result = await resp.json();
       if (result.audioUrl) {
         setAudioUrl(result.audioUrl);
       }

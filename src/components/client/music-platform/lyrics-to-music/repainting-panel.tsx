@@ -1,13 +1,58 @@
 'use client';
 
 import { useState } from "react";
+import { useAuth } from "~/contexts/AuthContext";
+import { useAudioStore } from "~/stores/audio-store";
+import { GenerateButton } from "../generate-button";
 
 export function RepaintingPanel() {
+  const { user } = useAuth();
+  const { setAudioUrl } = useAudioStore();
   const [variance, setVariance] = useState(0.5);
   const [seed, setSeed] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [source, setSource] = useState("text2music");
+  const [loading, setLoading] = useState(false);
+
+  const handleRepaint = async () => {
+    if (!user) {
+      alert("Please sign in to repaint music.");
+      return;
+    }
+    if (!startTime || !endTime) {
+      alert("Please provide start and end times.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const resp = await fetch("/api/generate-music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "repaint",
+          prompt: "",
+          src_audio_path: source === "upload" ? "" : "", // TODO: wire actual path/source selection
+          repaint_start: parseFloat(startTime),
+          repaint_end: parseFloat(endTime),
+          retake_variance: variance,
+          retake_seeds: seed,
+          userId: user.id,
+        }),
+      });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Failed to repaint");
+      const result = await resp.json();
+      if (result.audioUrl) {
+        setAudioUrl(result.audioUrl);
+      }
+    } catch (error) {
+      console.error("Failed to repaint music:", error);
+      alert("Failed to repaint music. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -66,7 +111,15 @@ export function RepaintingPanel() {
           <option value="upload">upload</option>
         </select>
       </div>
-      <button className="w-full rounded-lg bg-black py-2 text-white">Repaint</button>
+      <GenerateButton
+        onGenerate={handleRepaint}
+        isDisabled={loading}
+        isLoading={loading}
+        showDownload={false}
+        creditsRemaining={0}
+        showCredits={false}
+        buttonText="Repaint"
+      />
     </div>
   );
 }

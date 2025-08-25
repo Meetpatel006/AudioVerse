@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaUpload } from "react-icons/fa";
-import {
-  generateSpeechToSpeech,
-  generateUploadUrl,
-  generationStatus,
-  getAvailableVoices,
-  type Voice,
-} from "~/actions/generate-speech";
+import type { Voice } from "~/actions/generate-speech";
 import { GenerateButton } from "~/components/client/creative-platform/generate-button";
 import { useAudioStore } from "~/stores/audio-store";
 import { useVoiceStore } from "~/stores/voice-store";
@@ -63,7 +57,13 @@ export function VoiceChanger({ credits, service, userId }: VoiceChangerProps) {
 
     try {
       // First, get the upload URL and blob key
-      const uploadResult = await generateUploadUrl(file.type);
+      const uploadResp = await fetch("/api/generate-speech/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileType: file.type }),
+      });
+      if (!uploadResp.ok) throw new Error((await uploadResp.json()).error || "Failed to get upload URL");
+      const uploadResult = await uploadResp.json();
       
       // Upload the file to Azure Blob Storage
       const uploadResponse = await fetch(uploadResult.uploadUrl, {
@@ -80,12 +80,13 @@ export function VoiceChanger({ credits, service, userId }: VoiceChangerProps) {
       }
 
       // Call the speech-to-speech generation
-      const result = await generateSpeechToSpeech(
-        uploadResult.blobKey,
-        selectedVoice.id,
-        userId,
-        file.name
-      );
+      const resp = await fetch("/api/generate-speech/speech-to-speech", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceAudioKey: uploadResult.blobKey, targetVoice: selectedVoice.id, userId, fileName: file.name }),
+      });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Failed to convert");
+      const result = await resp.json();
 
       if (result.audioUrl) {
         // If we have the audio URL immediately, play it
@@ -117,7 +118,13 @@ export function VoiceChanger({ credits, service, userId }: VoiceChangerProps) {
   useEffect(() => {
     const fetchVoices = async () => {
       try {
-        const voices = await getAvailableVoices(service);
+        const voicesResp = await fetch("/api/generate-speech/voices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ service }),
+      });
+      if (!voicesResp.ok) throw new Error((await voicesResp.json()).error || "Failed to fetch voices");
+      const voices = await voicesResp.json();
         setAvailableVoices(voices);
       } catch (error) {
         console.error("Error fetching voices:", error);
@@ -135,7 +142,13 @@ export function VoiceChanger({ credits, service, userId }: VoiceChangerProps) {
 
     const checkStatus = async () => {
       try {
-        const status = await generationStatus(currentAudioId);
+        const statusResp = await fetch("/api/generate-speech/generation-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audioId: currentAudioId }),
+        });
+        if (!statusResp.ok) throw new Error((await statusResp.json()).error || "Failed to check status");
+        const status = await statusResp.json();
         const selectedVoice = getSelectedVoice("seedvc");
 
         if (!isMounted) return;

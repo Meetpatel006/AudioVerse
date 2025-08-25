@@ -13,12 +13,7 @@ import {
 } from "react-icons/io5";
 import type { ServiceType } from "~/types/services";
 import { GenerateButton } from "../generate-button";
-import {
-  generateTextToSpeech,
-  generationStatus,
-  getAvailableVoices,
-  type Voice,
-} from "~/actions/generate-speech";
+import type { Voice } from "~/actions/generate-speech";
 import { useVoiceStore } from "~/stores/voice-store";
 import { useAudioStore } from "~/stores/audio-store";
 import toast from "react-hot-toast";
@@ -52,7 +47,13 @@ export function TextToSpeechEditor({
 
     const checkStatus = async () => {
       try {
-        const status = await generationStatus(currentAudioId);
+        const statusResp = await fetch("/api/generate-speech/generation-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audioId: currentAudioId }),
+        });
+        if (!statusResp.ok) throw new Error((await statusResp.json()).error || "Failed to check status");
+        const status = await statusResp.json();
         const selectedVoice = getSelectedVoice("styletts2");
 
         if (!isMounted) return;
@@ -148,11 +149,13 @@ export function TextToSpeechEditor({
 
     try {
       setLoading(true);
-      const { audioId, shouldShowThrottleAlert, audioUrl } = await generateTextToSpeech(
-        textContent,
-        selectedVoice.id,
-        userId
-      );
+      const res = await fetch("/api/generate-speech/text-to-speech", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: textContent, voice: selectedVoice.id, userId }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || "Failed to generate");
+      const { audioId, shouldShowThrottleAlert, audioUrl } = await res.json();
 
       if (shouldShowThrottleAlert) {
         toast("Exceeding 3 requests per minute will queue your requests.", {

@@ -5,7 +5,7 @@ import type { ServiceType } from "~/types/services";
 import { GenerateButton } from "../generate-button";
 import { useAudioStore } from "~/stores/audio-store";
 import toast from "react-hot-toast";
-import { generateMelody, generationStatus } from "~/actions/generate-melody";
+// Use API route for generation status
 
 export function MelodyMakerEditor({
   service,
@@ -39,7 +39,13 @@ export function MelodyMakerEditor({
 
     const checkStatus = async () => {
       try {
-        const status = await generationStatus(currentAudioId);
+        const statusResp = await fetch("/api/generate-melody/generation-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audioId: currentAudioId }),
+        });
+        if (!statusResp.ok) throw new Error((await statusResp.json()).error || "Failed to check status");
+        const status = await statusResp.json();
 
         if (!isMounted) return;
 
@@ -110,16 +116,22 @@ export function MelodyMakerEditor({
     try {
       setLoading(true);
       
-      const { audioId, shouldShowThrottleAlert, audioUrl } = await generateMelody(
-        prompt,
-        solver,
-        numInferenceSteps,
-        duration,
-        targetFlow,
-        regularization,
-        regularizationStrength,
-        userId
-      );
+      const resp = await fetch("/api/generate-melody", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
+          solver,
+          numInferenceSteps,
+          duration,
+          targetFlow,
+          regularization,
+          regularizationStrength,
+          userId,
+        }),
+      });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Failed to generate melody");
+      const { audioId, shouldShowThrottleAlert, audioUrl } = await resp.json();
 
       if (shouldShowThrottleAlert) {
         toast("Exceeding 3 requests per minute will queue your requests.", {

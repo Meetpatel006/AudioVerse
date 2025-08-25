@@ -37,8 +37,6 @@ export function HistoryPanel({
     }
   };
 
-  console.log('HistoryPanel received historyItems:', historyItems);
-
   return (
     <div className="flex h-full w-full flex-col">
       <div className="w-full flex-shrink-0">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { retakeMusic } from "~/actions/generate-music";
+// Use API route so it appears in Network tab
 import { useAuth } from "~/contexts/AuthContext";
 import { useAudioStore } from "~/stores/audio-store";
 import { GenerateButton } from "../generate-button";
@@ -29,13 +29,13 @@ export function RetakePanel() {
 
     setLoading(true);
     try {
-      const result = await retakeMusic({
-        prompt: MOCK_PROMPT, // Using mock prompt
-        lyrics: MOCK_LYRICS, // Using mock lyrics
-        retake_seeds: seeds,
-        retake_variance: variance,
-        userId: user.id,
+      const resp = await fetch("/api/generate-music", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "retake", prompt: MOCK_PROMPT, lyrics: MOCK_LYRICS, retake_seeds: seeds, retake_variance: variance, userId: user.id }),
       });
+      if (!resp.ok) throw new Error((await resp.json()).error || "Failed to retake");
+      const result = await resp.json();
       if (result.audioUrl) {
         setAudioUrl(result.audioUrl);
       }
