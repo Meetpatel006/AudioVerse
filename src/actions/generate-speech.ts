@@ -7,7 +7,8 @@ import { ObjectId } from 'mongodb';
 
 const STYLETTS2_API_URL = process.env.STYLETTS2_API_URL || "https://gcet--styletts2-api-fastapi-app-dev.modal.run";
 const API_KEY = process.env.STYLETTS2_API_KEY || "12345";
-const MAKE_AUDIO_API_URL = process.env.MAKE_AUDIO_API_URL || "https://gcet--make-an-audio-api-fastapi-app-dev.modal.run";
+// Always use the full URL to avoid client-side routing issues
+const MAKE_AUDIO_API_URL = "https://gcet--make-an-audio-api-fastapi-app-dev.modal.run";
 const MAKE_AUDIO_API_KEY = process.env.MAKE_AUDIO_API_KEY || "make-audio-2025";
 
 export interface Voice {
@@ -222,7 +223,7 @@ export async function generateSoundEffect(prompt: string, userId: string): Promi
     // Generate a unique ID for this audio generation
     const audioId = Math.random().toString(36).substring(2, 15);
 
-    // Call the Make-An-Audio API
+    // Call the Make-An-Audio API with the full URL to avoid client-side routing issues
     const response = await fetch(`${MAKE_AUDIO_API_URL}/generate`, {
       method: 'POST',
       headers: {
