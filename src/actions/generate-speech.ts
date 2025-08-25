@@ -5,11 +5,11 @@ import { addHistoryItem } from "~/lib/history-server";
 import { getMongoClient } from "~/lib/mongodb";
 import { ObjectId } from 'mongodb';
 
-const STYLETTS2_API_URL = "https://gcet--styletts2-api-fastapi-app-dev.modal.run";
-const API_KEY = "12345";
+const STYLETTS2_API_URL = process.env.STYLETTS2_API_URL || "";
+const API_KEY = process.env.STYLETTS2_API_KEY || "";
 // Always use the full URL to avoid client-side routing issues
-const MAKE_AUDIO_API_URL = "https://gcet--make-an-audio-api-fastapi-app-dev.modal.run";
-const MAKE_AUDIO_API_KEY = "make-audio-2025";
+const MAKE_AUDIO_API_URL = process.env.MAKE_AUDIO_API_URL || "";
+const MAKE_AUDIO_API_KEY = process.env.MAKE_AUDIO_API_KEY || "";
 
 export interface Voice {
   id: string;
