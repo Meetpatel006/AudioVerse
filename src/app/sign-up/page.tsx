@@ -4,6 +4,8 @@
 
 import { SignUpPage, type Testimonial } from "../../components/ui/sign-up";
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'react-hot-toast';
 
 const sampleTestimonials: Testimonial[] = [
   {
@@ -28,19 +30,38 @@ const sampleTestimonials: Testimonial[] = [
 
 const SignUp = () => {
   const router = useRouter();
-  const handleSignUp = (event?: React.FormEvent<HTMLFormElement>) => {
+  const { register } = useAuth();
+
+  const handleSignUp = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     if (event) {
-      const formData = new FormData(event.currentTarget);
-      const data = Object.fromEntries(formData.entries());
-      console.log("Sign Up submitted:", data);
-      alert(`Account created! Check the browser console for form data.`);
+      try {
+        const formData = new FormData(event.currentTarget);
+        const data = Object.fromEntries(formData.entries());
+        
+        if (!data.name || !data.email || !data.password) {
+          toast.error('Please fill in all fields');
+          return;
+        }
+        
+        await register(
+          data.name as string,
+          data.email as string,
+          data.password as string
+        );
+        
+        toast.success('Account created successfully!');
+        router.push('/creative-platform/home');
+      } catch (error) {
+        console.error('Sign up error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to create account';
+        toast.error(errorMessage);
+      }
     }
   };
 
   const handleGoogleSignUp = () => {
-    console.log("Sign up with Google clicked");
-    alert("Redirecting to Google sign up...");
+    toast('Google sign up coming soon!');
   };
 
   const handleSignIn = () => {
