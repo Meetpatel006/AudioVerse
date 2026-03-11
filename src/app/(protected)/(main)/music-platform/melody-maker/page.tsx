@@ -1,15 +1,20 @@
 import { PageLayout } from "~/components/client/music-platform/melody-maker/page-layout";
 import { MelodyMakerEditor } from "~/components/client/music-platform/melody-maker/melody-maker-editor";
-import { getHistoryItems } from "~/lib/history-server";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { verifyToken } from "~/lib/jwt";
+import { fetchAuthQuery } from "~/lib/auth-server";
 
 export default async function MelodyMakerPage() {
   const service = "melody-maker";
-  const token = (await cookies()).get("token")?.value;
-  const user = token ? await verifyToken(token) : null;
-  const userId = user?.userId;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mod = (await import("@convex/_generated/api")) as any;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const api = mod.api;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  const user = await fetchAuthQuery(api.auth.getCurrentUser);
+  const userId = user?.id as string | undefined;
+  const credits = 1000;
 
   if (!userId) {
     return (
@@ -26,8 +31,10 @@ export default async function MelodyMakerPage() {
     );
   }
 
-  const historyItems = await getHistoryItems(userId, service);
-  const credits = 1000; // Default value, you might want to fetch this
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  const historyItems = await fetchAuthQuery(api.audioHistory.getMyHistory, {
+    service,
+  });
 
   async function handleHistoryUpdate() {
     "use server";
@@ -39,7 +46,7 @@ export default async function MelodyMakerPage() {
       title={"Melody Maker"}
       service={service}
       showSidebar={true}
-      historyItems={historyItems}
+      historyItems={historyItems ?? []}
     >
       <MelodyMakerEditor
         service="melody-maker"

@@ -7,7 +7,30 @@
 /** @type {import("next").NextConfig} */
 const config = {
   images: {
-    domains: ["images.unsplash.com", "ik.imagekit.io", "tailark.com", "randomuser.me"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+      },
+      {
+        protocol: "https",
+        hostname: "tailark.com",
+      },
+      {
+        protocol: "https",
+        hostname: "randomuser.me",
+      },
+      {
+        protocol: "https",
+        hostname: "html.tailus.io",
+        pathname: "/blocks/customers/**",
+      },
+    ],
+    dangerouslyAllowSVG: true,
   },
   // Allow the build to complete even when ESLint/type errors are present.
   // This is a temporary, deliberate choice to unblock CI/local builds while

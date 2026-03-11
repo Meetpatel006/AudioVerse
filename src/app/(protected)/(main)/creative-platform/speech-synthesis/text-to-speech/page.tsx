@@ -1,14 +1,19 @@
 import { PageLayout } from "~/components/client/creative-platform/page-layout";
-import { getHistoryItems } from "~/lib/history-server";
 import { TextToSpeechEditor } from "~/components/client/creative-platform/speech-synthesis/text-to-speech-editor";
-import { cookies } from "next/headers";
-import { verifyToken } from "~/lib/jwt";
+import { fetchAuthQuery } from "~/lib/auth-server";
 
 export default async function TextToSpeechPage() {
   const service = "styletts2";
-  const token = (await cookies()).get("token")?.value;
-  const user = token ? await verifyToken(token) : null;
-  const userId = user?.userId;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mod = (await import("@convex/_generated/api")) as any;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const api = mod.api;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  const user = await fetchAuthQuery(api.auth.getCurrentUser);
+  const userId = user?.id as string | undefined;
+  const credits = 1000;
 
   if (!userId) {
     return (
@@ -25,17 +30,23 @@ export default async function TextToSpeechPage() {
     );
   }
 
-  const historyItems = await getHistoryItems(userId, service);
-  const credits = 1000; // Set a default number of credits or implement your own logic
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  const historyItems = await fetchAuthQuery(api.audioHistory.getMyHistory, {
+    service,
+  });
 
   return (
     <PageLayout
       title={"Text to Speech"}
       service={service}
       showSidebar={true}
-      historyItems={historyItems}
+      historyItems={historyItems ?? []}
     >
-      <TextToSpeechEditor service="styletts2" credits={credits} userId={userId} />
+      <TextToSpeechEditor
+        service="styletts2"
+        credits={credits}
+        userId={userId}
+      />
     </PageLayout>
   );
 }

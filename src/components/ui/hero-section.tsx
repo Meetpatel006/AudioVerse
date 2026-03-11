@@ -67,7 +67,7 @@ export function HeroSection() {
                             }}
                             className="absolute inset-0 -z-20">
                             <Image
-                                src="/public/image.png"
+                                src="/image.png"
                                 alt="background"
                                 className="absolute inset-x-0 top-56 -z-20 lg:top-32 block"
                                 width={3276}
@@ -197,7 +197,8 @@ export function HeroSection() {
                                     src="https://html.tailus.io/blocks/customers/nvidia.svg"
                                     alt="Nvidia Logo"
                                     height={20}
-                                    width={0}
+                                    width={92}
+                                    unoptimized
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
@@ -208,7 +209,8 @@ export function HeroSection() {
                                     src="https://html.tailus.io/blocks/customers/nvidia.svg"
                                     alt="Nvidia Logo"
                                     height={20}
-                                    width={0}
+                                    width={92}
+                                    unoptimized
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
@@ -218,7 +220,8 @@ export function HeroSection() {
                                     src="https://html.tailus.io/blocks/customers/column.svg"
                                     alt="Column Logo"
                                     height={20}
-                                    width={0}
+                                    width={88}
+                                    unoptimized
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
@@ -228,7 +231,8 @@ export function HeroSection() {
                                     src="https://html.tailus.io/blocks/customers/github.svg"
                                     alt="GitHub Logo"
                                     height={20}
-                                    width={0}
+                                    width={92}
+                                    unoptimized
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
@@ -238,7 +242,8 @@ export function HeroSection() {
                                     src="https://html.tailus.io/blocks/customers/nike.svg"
                                     alt="Nike Logo"
                                     height={20}
-                                    width={0}
+                                    width={72}
+                                    unoptimized
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
@@ -248,7 +253,8 @@ export function HeroSection() {
                                     src="https://html.tailus.io/blocks/customers/column.svg"
                                     alt="Column Logo"
                                     height={20}
-                                    width={0}
+                                    width={88}
+                                    unoptimized
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
@@ -258,7 +264,8 @@ export function HeroSection() {
                                     src="https://html.tailus.io/blocks/customers/lilly.svg"
                                     alt="Lilly Logo"
                                     height={28}
-                                    width={0}
+                                    width={84}
+                                    unoptimized
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>
@@ -269,7 +276,8 @@ export function HeroSection() {
                                     src="https://html.tailus.io/blocks/customers/openai.svg"
                                     alt="OpenAI Logo"
                                     height={24}
-                                    width={0}
+                                    width={96}
+                                    unoptimized
                                     style={{ filter: 'grayscale(100%) invert(1) brightness(0.8) contrast(1.1)', opacity: 0.9 }}
                                 />
                             </div>

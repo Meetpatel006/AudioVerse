@@ -2,8 +2,6 @@
 
 import { getUploadUrl } from "~/lib/azure-storage";
 import { addHistoryItem } from "~/lib/history-server";
-import { getMongoClient } from "~/lib/mongodb";
-import { ObjectId } from 'mongodb';
 
 const STYLETTS2_API_URL = process.env.STYLETTS2_API_URL || "";
 const API_KEY = process.env.STYLETTS2_API_KEY || "";
@@ -17,104 +15,110 @@ export interface Voice {
   preview_url?: string;
 }
 
-export async function getAvailableVoices(service = 'styletts2'): Promise<Voice[]> {
-  if (service === 'seedvc') {
+export async function getAvailableVoices(
+  service = "styletts2",
+): Promise<Voice[]> {
+  if (service === "seedvc") {
     return [
-      { id: 'male', name: 'Male' },
-      { id: 'female', name: 'Female' },
-      { id: 'trump', name: 'Donald Trump' }
+      { id: "male", name: "Male" },
+      { id: "female", name: "Female" },
+      { id: "trump", name: "Donald Trump" },
     ];
   }
-  
+
   // Default to StyleTTS2 voices
   try {
     const response = await fetch(`${STYLETTS2_API_URL}/voices`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Authorization': API_KEY, // Modal expects just the key, not "Bearer " prefix
-        'Content-Type': 'application/json'
+        Authorization: API_KEY, // Modal expects just the key, not "Bearer " prefix
+        "Content-Type": "application/json",
       },
       // Add timeout to prevent hanging
-      signal: AbortSignal.timeout(10000) // 10 second timeout
+      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
 
     if (!response.ok) {
-      let errorDetail = 'Failed to fetch available voices';
+      let errorDetail = "Failed to fetch available voices";
       try {
         const errorData = await response.json();
         errorDetail = errorData.detail || JSON.stringify(errorData);
-        console.error('API Error:', errorData);
+        console.error("API Error:", errorData);
       } catch (e) {
-        console.error('Failed to parse error response:', e);
+        console.error("Failed to parse error response:", e);
       }
       throw new Error(errorDetail);
     }
 
     const data = await response.json();
-    console.log('Received voices data:', data);
-    
+    console.log("Received voices data:", data);
+
     // Handle different response formats
     let voices: Voice[] = [];
-    
+
     if (Array.isArray(data)) {
       // If the API returns an array of voice objects
       voices = data.map((item: any) => ({
         id: item.id || String(Math.random()),
-        name: item.name || 'Unknown Voice',
-        preview_url: item.preview_url
+        name: item.name || "Unknown Voice",
+        preview_url: item.preview_url,
       }));
-    } else if (typeof data === 'object' && data !== null) {
+    } else if (typeof data === "object" && data !== null) {
       // If the API returns an object with voice IDs as keys
       voices = Object.entries(data).map(([id, voiceDetails]) => ({
         id,
-        name: typeof voiceDetails === 'string' 
-          ? voiceDetails.charAt(0).toUpperCase() + voiceDetails.slice(1)
-          : 'Unknown Voice',
-        preview_url: undefined
+        name:
+          typeof voiceDetails === "string"
+            ? voiceDetails.charAt(0).toUpperCase() + voiceDetails.slice(1)
+            : "Unknown Voice",
+        preview_url: undefined,
       }));
     }
-    
+
     // Ensure we always return at least some default voices
     if (voices.length === 0) {
-      console.warn('No voices found in API response, using fallback voices');
+      console.warn("No voices found in API response, using fallback voices");
       voices = [
-        { id: 'man', name: 'Man' },
-        { id: 'woman', name: 'Woman' }
+        { id: "man", name: "Man" },
+        { id: "woman", name: "Woman" },
       ];
     }
-    
+
     return voices;
-    
   } catch (error) {
-    console.error('Error in getAvailableVoices:', error);
-    
+    console.error("Error in getAvailableVoices:", error);
+
     // Return default voices if the API call fails
     return [
-      { id: 'man', name: 'Man' },
-      { id: 'woman', name: 'Woman' },
-      { id: 'child', name: 'Child' },
-      { id: 'elderly', name: 'Elderly' }
+      { id: "man", name: "Man" },
+      { id: "woman", name: "Woman" },
+      { id: "child", name: "Child" },
+      { id: "elderly", name: "Elderly" },
     ];
   }
 }
 
-export async function generateTextToSpeech(text: string, voice: string, userId: string) {
+export async function generateTextToSpeech(
+  text: string,
+  voice: string,
+  userId: string,
+) {
   try {
     const response = await fetch(`${STYLETTS2_API_URL}/generate`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': API_KEY // Modal expects just the key, not "Bearer " prefix
+        "Content-Type": "application/json",
+        Authorization: API_KEY, // Modal expects just the key, not "Bearer " prefix
       },
       body: JSON.stringify({
         text,
-        target_voice: voice
-      })
+        target_voice: voice,
+      }),
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || 'Failed to generate speech');
+      throw new Error(error.detail || "Failed to generate speech");
     }
 
     const data = await response.json();
@@ -125,60 +129,64 @@ export async function generateTextToSpeech(text: string, voice: string, userId: 
     const audioId = Math.random().toString(36).substring(2, 15);
 
     // Use the provided user ID or fall back to 'anonymous'
-    const finalUserId = userId || 'anonymous';
+    const finalUserId = userId || "anonymous";
 
     // Store in history
     await addHistoryItem({
-      title: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+      title: text.substring(0, 50) + (text.length > 50 ? "..." : ""),
       voice: voice,
       audioUrl: audioUrl,
       time: new Date().toLocaleTimeString(),
       date: new Date().toLocaleDateString(),
       service: "styletts2",
       userId: finalUserId,
-      blobName: blobName
+      blobName: blobName,
     });
 
     return {
       audioId,
       shouldShowThrottleAlert: false,
-      audioUrl
+      audioUrl,
     };
   } catch (error) {
-    console.error('Error generating speech:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to generate speech');
+    console.error("Error generating speech:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to generate speech",
+    );
   }
 }
 
-const SEED_VC_API_URL = process.env.SEED_VC_API_URL || "https://gcet--seed-vc-api-fastapi-app-dev.modal.run";
+const SEED_VC_API_URL =
+  process.env.SEED_VC_API_URL ||
+  "https://gcet--seed-vc-api-fastapi-app-dev.modal.run";
 const SEED_VC_API_KEY = process.env.SEED_VC_API_KEY || "seed-vc-2025";
 
 export async function generateSpeechToSpeech(
   sourceAudioKey: string,
   targetVoice: string,
   userId: string,
-  fileName = "voice_changed_audio"
+  fileName = "voice_changed_audio",
 ) {
   try {
     // Generate a unique ID for this audio generation
     const audioId = Math.random().toString(36).substring(2, 15);
-    
+
     // Call the Seed-VC API
     const response = await fetch(`${SEED_VC_API_URL}/convert`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': SEED_VC_API_KEY // Modal expects just the key, not "Bearer " prefix
+        "Content-Type": "application/json",
+        Authorization: SEED_VC_API_KEY, // Modal expects just the key, not "Bearer " prefix
       },
       body: JSON.stringify({
         source_audio_key: sourceAudioKey,
-        target_voice: targetVoice
-      })
+        target_voice: targetVoice,
+      }),
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || 'Failed to convert voice');
+      throw new Error(error.detail || "Failed to convert voice");
     }
 
     const data = await response.json();
@@ -186,7 +194,7 @@ export async function generateSpeechToSpeech(
     const blobName = data.blob_name;
 
     if (!audioUrl) {
-      throw new Error('No audio URL returned from the API');
+      throw new Error("No audio URL returned from the API");
     }
 
     // Store in history
@@ -198,17 +206,19 @@ export async function generateSpeechToSpeech(
       date: new Date().toLocaleDateString(),
       service: "seedvc",
       userId: userId,
-      blobName: blobName
+      blobName: blobName,
     });
 
     return {
       audioId,
       shouldShowThrottleAlert: false,
-      audioUrl
+      audioUrl,
     };
   } catch (error) {
-    console.error('Error in speech-to-speech conversion:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to convert voice');
+    console.error("Error in speech-to-speech conversion:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to convert voice",
+    );
   }
 }
 
@@ -218,26 +228,29 @@ interface GenerateSoundEffectResponse {
   audioUrl?: string;
 }
 
-export async function generateSoundEffect(prompt: string, userId: string): Promise<GenerateSoundEffectResponse> {
+export async function generateSoundEffect(
+  prompt: string,
+  userId: string,
+): Promise<GenerateSoundEffectResponse> {
   try {
     // Generate a unique ID for this audio generation
     const audioId = Math.random().toString(36).substring(2, 15);
 
     // Call the Make-An-Audio API with the full URL to avoid client-side routing issues
     const response = await fetch(`${MAKE_AUDIO_API_URL}/generate`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': MAKE_AUDIO_API_KEY // Modal expects just the key, not "Bearer " prefix
+        "Content-Type": "application/json",
+        Authorization: MAKE_AUDIO_API_KEY, // Modal expects just the key, not "Bearer " prefix
       },
       body: JSON.stringify({
-        prompt: prompt
-      })
+        prompt: prompt,
+      }),
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || 'Failed to generate sound effect');
+      throw new Error(error.detail || "Failed to generate sound effect");
     }
 
     const data = await response.json();
@@ -245,51 +258,57 @@ export async function generateSoundEffect(prompt: string, userId: string): Promi
     const blobName = data.blob_name;
 
     if (!audioUrl) {
-      throw new Error('No audio URL returned from the API');
+      throw new Error("No audio URL returned from the API");
     }
 
     // Store in history
     await addHistoryItem({
-      title: "Sound Effect: " + (prompt.substring(0, 50) + (prompt.length > 50 ? '...' : '')),
+      title:
+        "Sound Effect: " +
+        (prompt.substring(0, 50) + (prompt.length > 50 ? "..." : "")),
       voice: null,
       audioUrl: audioUrl,
       time: new Date().toLocaleTimeString(),
       date: new Date().toLocaleDateString(),
       service: "make-an-audio",
-      userId: userId || 'anonymous',
-      blobName: blobName
+      userId: userId || "anonymous",
+      blobName: blobName,
     });
 
     return {
       audioId,
       shouldShowThrottleAlert: false,
-      audioUrl
+      audioUrl,
     };
   } catch (error) {
-    console.error('Error generating sound effect:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to generate sound effect');
+    console.error("Error generating sound effect:", error);
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : "Failed to generate sound effect",
+    );
   }
 }
 
 export async function generationStatus(
-  audioId: string
+  audioId: string,
 ): Promise<{ success: boolean; audioUrl: string | null }> {
   try {
     // For Seed-VC, the audio is typically generated synchronously, so we don't need to poll
     // But we'll keep this function for backward compatibility
     // If the audio was generated successfully, it would have been returned in the initial response
     // So if we're checking status, it likely means the audio is not ready or failed
-    
+
     // Return a failure status to stop polling
     return {
       success: false,
-      audioUrl: null
+      audioUrl: null,
     };
   } catch (error) {
-    console.error('Error checking generation status:', error);
+    console.error("Error checking generation status:", error);
     return {
       success: false,
-      audioUrl: null
+      audioUrl: null,
     };
   }
 }

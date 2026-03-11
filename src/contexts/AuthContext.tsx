@@ -1,25 +1,13 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
-
-// API Response Types
-interface AuthResponse {
-  message?: string;
-  user?: User;
-  error?: string;
-}
-
-interface UserResponse {
-  user: User;
-  error?: string;
-}
+import { createContext, useContext, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "~/lib/auth-client";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  // Add other user properties as needed
 }
 
 interface AuthContextType {
@@ -33,165 +21,53 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  // We're not using router, so we can remove this line
-  // const router = useRouter();
+  const router = useRouter();
+  const { data: session, isPending: loading } = authClient.useSession();
 
-  useEffect(() => {
-    // Check if user is logged in
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include',
-        });
-        
-        if (response.ok) {
-          const data = await response.json() as UserResponse;
-          setUser(data.user);
-          
-          // If we're on the sign-in page but already authenticated, redirect to the 'from' URL or default
-          if (window.location.pathname === '/sign-in' || window.location.pathname === '/sign-up') {
-            const url = new URL(window.location.href);
-            const from = url.searchParams.get('from');
-            // Only redirect if we have a valid 'from' URL that's not the sign-in page
-            if (from && from !== '/sign-in' && from !== '/sign-up') {
-              window.location.href = from;
-            } else {
-              window.location.href = '/creative-platform/home';
-            }
-          }
-        } else {
-          setUser(null);
-          
-          // If we're on a protected route, redirect to sign-in with return URL
-          const currentPath = window.location.pathname;
-          if (currentPath.startsWith('/speech-synthesis') || 
-              currentPath.startsWith('/sound-effects') ||
-              currentPath.startsWith('/(protected)')) {
-            const returnUrl = encodeURIComponent(currentPath);
-            window.location.href = `/sign-in?from=${returnUrl}`;
-          }
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setUser(null);
-      } finally {
-        setLoading(false);
+  const user: User | null = session?.user
+    ? {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
       }
-    };
-
-    // Fix floating promise by using void operator
-    void checkAuth();
-  }, []);
+    : null;
 
   const login = async (email: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include', // Important for cookies to be sent
-      });
-
-      const data = await response.json() as AuthResponse;
-
-      if (!response.ok) {
-        throw new Error(data.error ?? 'Login failed');
-      }
-
-      // Fetch user data after successful login
-      const userResponse = await fetch('/api/auth/me', {
-        credentials: 'include',
-      });
-      
-      if (!userResponse.ok) {
-        throw new Error('Failed to fetch user data');
-      }
-      
-      const userData = await userResponse.json() as UserResponse;
-      setUser(userData.user);
-      
-      // Get the 'from' query parameter from the URL
-      const url = new URL(window.location.href);
-      const from = url.searchParams.get('from');
-      
-      // Use window.location.href for immediate navigation
-      window.location.href = from ?? '/creative-platform/home';
-      
-      // Fix unsafe return by adding type assertion
-      return;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
+    const { error } = await authClient.signIn.email({
+      email,
+      password,
+      callbackURL: "/creative-platform/home",
+    });
+    if (error) throw new Error(error.message ?? "Login failed");
   };
 
   const register = async (name: string, email: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password, confirmPassword: password }),
-        credentials: 'include',
-      });
-
-      const data = await response.json() as AuthResponse;
-
-      if (!response.ok) {
-        throw new Error(data.error ?? 'Registration failed');
-      }
-
-      // Auto-login after registration
-      await login(email, password);
-      
-      // The login function will handle the redirection
-      // Fix unsafe return by removing it (login already handles redirection)
-      return;
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
-    }
+    const { error } = await authClient.signUp.email({
+      name,
+      email,
+      password,
+      callbackURL: "/creative-platform/home",
+    });
+    if (error) throw new Error(error.message ?? "Registration failed");
   };
 
   const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', { 
-        method: 'POST',
-        credentials: 'include',
-      });
-      
-      // Clear the user state
-      setUser(null);
-      
-      // Force a full page reload to clear any cached data
-      window.location.href = '/sign-in';
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Even if there's an error, we should still try to redirect to sign-in
-      window.location.href = '/sign-in';
-    }
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => router.push("/sign-in"),
+      },
+    });
   };
 
-  const value = {
-    user,
-    loading,
-    login,
-    register,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

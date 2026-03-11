@@ -1,32 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { handler } from "~/lib/auth-server";
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    // Create response with success message
-    const response = NextResponse.json(
-      { message: 'Logout successful' },
-      { status: 200 }
+    return handler.POST(
+      new Request(new URL("/api/auth/sign-out", request.url), {
+        method: "POST",
+        headers: request.headers,
+      }),
     );
-
-    // Clear the token cookie
-    response.cookies.set({
-      name: 'token',
-      value: '',
-      httpOnly: true,
-      expires: new Date(0), // Set to past date to delete the cookie
-      path: '/',
-    });
-
-    return response;
   } catch (error) {
-    console.error('Logout error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error("Logout error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
-      { 
-        error: 'An error occurred during logout',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      {
+        error: "An error occurred during logout",
+        details:
+          process.env.NODE_ENV === "development" ? errorMessage : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

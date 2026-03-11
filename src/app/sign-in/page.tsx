@@ -30,30 +30,20 @@ const sampleTestimonials: Testimonial[] = [
 function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    // Check for redirect URL in query params
-    const redirectUrl = searchParams.get('from') ?? '/creative-platform/home';
-    
-    // If user is already logged in, redirect them
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/me');
-        if (response.ok) {
-          router.push(redirectUrl);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-      }
-    };
+    if (loading) return;
 
-    void checkAuth();
-  }, [router, searchParams]);
+    const redirectUrl = searchParams.get('from') ?? '/creative-platform/home';
+    if (user) {
+      router.push(redirectUrl);
+    }
+  }, [loading, router, searchParams, user]);
 
   const handleSignIn = async (email: string, password: string) => {
     if (!email || !password) {

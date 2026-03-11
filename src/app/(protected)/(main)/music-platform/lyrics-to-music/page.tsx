@@ -1,14 +1,20 @@
-import { cookies } from "next/headers";
-import { verifyToken } from "~/lib/jwt";
+import { fetchAuthQuery } from "~/lib/auth-server";
 import { getHistoryItems } from "~/lib/history-server";
 import { LyricsToMusicEditor } from "~/components/client/music-platform/lyrics-to-music/lyrics-to-music-editor";
 import { PageLayout } from "~/components/client/music-platform/lyrics-to-music/page-layout";
 
 export default async function LyricsToMusicPage() {
   const service = "lyrics-to-music";
-  const token = (await cookies()).get("token")?.value;
-  const user = token ? await verifyToken(token) : null;
-  const userId = user?.userId;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mod = (await import("@convex/_generated/api")) as any;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const api = mod.api;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  const user = await fetchAuthQuery(api.auth.getCurrentUser);
+  const userId = user?.id as string | undefined;
+  const credits = 1000;
 
   if (!userId) {
     return (
@@ -26,7 +32,6 @@ export default async function LyricsToMusicPage() {
   }
 
   const historyItems = await getHistoryItems(userId, service);
-  const credits = 1000; // Set a default number of credits or implement your own logic
 
   return (
     <PageLayout
@@ -35,7 +40,11 @@ export default async function LyricsToMusicPage() {
       showSidebar={true}
       historyItems={historyItems}
     >
-      <LyricsToMusicEditor service={service} credits={credits} userId={userId} />
+      <LyricsToMusicEditor
+        service={service}
+        credits={credits}
+        userId={userId}
+      />
     </PageLayout>
   );
 }

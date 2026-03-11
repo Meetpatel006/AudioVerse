@@ -1,16 +1,8 @@
 import { PageLayout } from "~/components/client/creative-platform/page-layout";
 import { SoundEffectsGenerator } from "~/components/client/creative-platform/sound-effects/sound-effects-generator";
-import { cookies } from "next/headers";
-import { verifyToken } from "~/lib/jwt";
+import { fetchAuthQuery } from "~/lib/auth-server";
 
 export default async function SoundEffectsGeneratePage() {
-  const token = (await cookies()).get("token")?.value;
-  const user = token ? await verifyToken(token) : null;
-  const userId = user?.userId;
-  
-  // Set a default number of credits or implement your own logic
-  const credits = 1000;
-
   const soundEffectsTabs = [
     {
       name: "Generate",
@@ -21,7 +13,16 @@ export default async function SoundEffectsGeneratePage() {
       path: "/creative-platform/sound-effects/history",
     },
   ];
-  
+
+  const credits = 1000;
+
+  const user = await fetchAuthQuery(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((await import("@convex/_generated/api")) as any).api.auth.getCurrentUser,
+  );
+
+  const userId = user?.id as string | undefined;
+
   if (!userId) {
     return (
       <PageLayout
